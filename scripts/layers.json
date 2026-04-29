@@ -1,0 +1,10 @@
+{
+  "geoserverUrl": "https://ugs-geoserver-prod-flbcoqv7oa-uc.a.run.app/geoserver",
+  "layers": [
+    "energy_mineral:enmin_ucrc_wells_django_test_current",
+    "energy_mineral:enmin_ccus_geochemistry_current",
+    "energy_mineral:oilgasfields",
+    "energy_mineral:enmin_ucrc_basins_current"
+  ],
+  "_note": "Add layer names (workspace:name) to bulk-fetch SLDs into legacy-sld/ as migration reference. Run: npm run import:sld"
+}
