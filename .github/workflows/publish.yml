@@ -14,8 +14,11 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      GCP_PROJECT: ut-dnr-ugs-ucrc-prod
-      GCS_BUCKET: ut-dnr-ugs-ucrc-public
+      # Single origin: the shared maps-assets surface (same CDN as STAC/PMTiles/COG/viewer).
+      # Served at https://maps-assets.geology.utah.gov/styles/ — the warehouse bridge's default
+      # STYLES_INDEX_URL, so no warehouse config needed.
+      GCP_PROJECT: ut-dnr-ugs-maps-prod
+      GCS_BUCKET: ut-dnr-ugs-maps-prod-public
       GCS_PREFIX: styles
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +35,9 @@ jobs:
       # Workload Identity Federation. Both secrets must be set in repo settings:
       #   GCP_WIF_PROVIDER  — full resource name of the WIF provider
       #                       (projects/<num>/locations/global/workloadIdentityPools/<pool>/providers/<provider>)
-      #   GCP_SERVICE_ACCOUNT — service account email with roles/storage.objectAdmin on gs://ut-dnr-ugs-ucrc-public
+      #   GCP_SERVICE_ACCOUNT — service account email with roles/storage.objectAdmin on
+      #                          gs://ut-dnr-ugs-maps-prod-public (cross-project grant — the SA may
+      #                          live elsewhere; it needs write on the maps-prod public bucket).
       - id: auth
         uses: google-github-actions/auth@v2
         with:
