@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>OpenLayers PoC — landslidesusceptibility</title>
+    <link rel="stylesheet" href="https://esm.sh/ol@10/ol.css" />
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; font-family: system-ui, sans-serif; }
+        #app { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+        header {
+            background: #1f2933; color: #f5f7fa; padding: 10px 14px;
+            display: flex; gap: 12px; align-items: center;
+        }
+        header label { font-size: 12px; display: flex; gap: 6px; align-items: center; }
+        #map { width: 100%; height: 100%; }
+        #status { font-size: 11px; opacity: 0.85; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <header>
+            <strong style="font-size: 13px">OpenLayers QA — landslidesusceptibility_current</strong>
+            <label><input type="checkbox" id="showWms" checked /> WMS</label>
+            <label><input type="checkbox" id="showVec" checked /> Vector (WFS)</label>
+            <span id="status">loading…</span>
+        </header>
+        <div id="map"></div>
+    </div>
+
+    <script type="module">
+        import 'https://esm.sh/ol@10';
+        const ol = await import('https://esm.sh/ol@10');
+        const Map = (await import('https://esm.sh/ol@10/Map.js')).default;
+        const View = (await import('https://esm.sh/ol@10/View.js')).default;
+        const TileLayer = (await import('https://esm.sh/ol@10/layer/Tile.js')).default;
+        const VectorLayer = (await import('https://esm.sh/ol@10/layer/Vector.js')).default;
+        const ImageWMS = (await import('https://esm.sh/ol@10/source/ImageWMS.js')).default;
+        const ImageLayer = (await import('https://esm.sh/ol@10/layer/Image.js')).default;
+        const XYZ = (await import('https://esm.sh/ol@10/source/XYZ.js')).default;
+        const VectorSource = (await import('https://esm.sh/ol@10/source/Vector.js')).default;
+        const GeoJSON = (await import('https://esm.sh/ol@10/format/GeoJSON.js')).default;
+        const { Style, Fill, Stroke } = await import('https://esm.sh/ol@10/style.js');
+        const { fromLonLat } = await import('https://esm.sh/ol@10/proj.js');
+
+        const GEOSERVER = 'https://ugs-geoserver-prod-flbcoqv7oa-uc.a.run.app/geoserver';
+        const QUALIFIED = 'hazards:landslidesusceptibility_current';
+        const setStatus = (s) => { document.getElementById('status').textContent = s; };
+
+        // Categorical fill from the JSON style.
+        const FILL_COLOR_BY_HAZARD = { Hlss: '#e60000', Mlss: '#e69800', Llss: '#98e600' };
+        const styleFn = (feature) => {
+            const c = FILL_COLOR_BY_HAZARD[feature.get('lsshazardunit')] ?? 'transparent';
+            return new Style({
+                fill: new Fill({ color: c }),
+                stroke: new Stroke({ color: '#6e6e6e', width: 2 }),
+            });
+        };
+
+        const basemap = new TileLayer({
+            source: new XYZ({
+                urls: [
+                    'https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                    'https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png',
+                ],
+            }),
+        });
+
+        // Untiled WMS — single image per viewport, no tile-edge clipping artifacts.
+        const wmsLayer = new ImageLayer({
+            source: new ImageWMS({
+                url: `${GEOSERVER}/wms`,
+                params: { LAYERS: QUALIFIED },
+                serverType: 'geoserver',
+                ratio: 1,
+            }),
+        });
+
+        const vectorSource = new VectorSource({});
+        const vectorLayer = new VectorLayer({ source: vectorSource, style: styleFn });
+
+        const map = new Map({
+            target: 'map',
+            layers: [basemap, wmsLayer, vectorLayer],
+            view: new View({
+                center: fromLonLat([-112.98, 37.158]),
+                zoom: 16,
+            }),
+        });
+
+        // Fetch WFS GeoJSON
+        setStatus('fetching WFS…');
+        const url = `${GEOSERVER}/wfs?service=WFS&version=2.0.0&request=GetFeature` +
+            `&typeNames=${encodeURIComponent(QUALIFIED)}&outputFormat=application/json` +
+            `&srsName=EPSG:4326&count=10000`;
+        const geojson = await (await fetch(url)).json();
+        const fmt = new GeoJSON();
+        const feats = fmt.readFeatures(geojson, {
+            featureProjection: 'EPSG:3857',
+            dataProjection: 'EPSG:4326',
+        });
+        vectorSource.addFeatures(feats);
+        setStatus(`vector loaded: ${feats.length} features`);
+
+        document.getElementById('showWms').addEventListener('change', (e) => wmsLayer.setVisible(e.target.checked));
+        document.getElementById('showVec').addEventListener('change', (e) => vectorLayer.setVisible(e.target.checked));
+
+        window.__olMap = map;
+    </script>
+</body>
+</html>

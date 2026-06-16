@@ -3,3 +3,5 @@ dist
 dist-json
 *.log
 .DS_Store
+qa/cache/
+dist-pmtiles

@@ -1,31 +1,14 @@
 {
   "name": "@ugs-gio/styles",
   "version": "0.1.0",
-  "description": "MapLibre style modules + palettes for UGS map viewers. Source-of-truth for vector styling. Build outputs CDN-shaped JSON files referenced by STAC renders extension.",
+  "description": "MapLibre style modules for UGS map viewers. Source-of-truth for vector styling. Build outputs CDN-hosted JSON consumed via STAC renders extension.",
+  "private": true,
   "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
-    "./styles/*": {
-      "types": "./dist/styles/*.d.ts",
-      "import": "./dist/styles/*.js"
-    },
-    "./palettes/*": {
-      "types": "./dist/palettes/*.d.ts",
-      "import": "./dist/palettes/*.js"
-    }
-  },
-  "files": ["dist", "src"],
   "scripts": {
-    "build": "tsup",
     "build:json": "tsx scripts/build-json.ts",
     "import:sld": "tsx scripts/import-sld.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1"
   },
   "peerDependencies": {
     "maplibre-gl": ">=4"
@@ -33,7 +16,6 @@
   "devDependencies": {
     "@types/node": "^25.6.0",
     "maplibre-gl": "^5.23.0",
-    "tsup": "^8.5.1",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"
   }
