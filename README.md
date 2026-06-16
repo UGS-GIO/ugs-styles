@@ -4,47 +4,66 @@ Source-of-truth for MapLibre styling on UGS web/mobile maps. Replaces GeoServer 
 
 **Distribution: CDN-only.** This repo produces static JSON; consumers fetch over HTTP at runtime. No npm publish, no GitHub package install in apps.
 
+A style is **declarative config**, not handwritten GL: declare `{ archetype, field, palette }` and
+the MapLibre GL fragment is **generated**. Bound to warehouse data by **STAC item id**. Full
+rationale in [`DESIGN.md`](DESIGN.md).
+
 ## What's inside
 
 ```
 src/
-  palettes/                            shared color tokens
-  expressions/                         reusable maplibre expression builders
-  styles/{layer-name}/{render-id}.ts   per-layer per-render style fragments
-  types.ts                             StyleLayer = Omit<LayerSpecification, 'source'>
+  palettes/        named color sets + registry (palettes/index.ts)
+  expressions/     reusable maplibre expression builders (match, zoom-interpolate)
+  archetypes/      generate(spec) → StyleLayer[]  (simple | categorical | point)
+  styles/{layer}/{render}.ts   per-render `spec` (or a handwritten StyleLayer[] escape hatch)
+  types.ts         StyleLayer · StyleSpec · Binding
 scripts/
-  build-json.ts                        compile TS styles → CDN JSON
-  import-sld.ts                        helper: pull legacy SLDs from GeoServer
-  layers.json                          target list for bulk SLD pulls
-legacy-sld/                            SLD reference (deleted once migration done)
-dist-json/                             build output, synced to CDN by CI
+  build-json.ts    spec → generate → dist-json/*.json + index.json (keyed by itemId), validated
+  coverage.ts      diff live STAC catalog vs bound styles → the worklist
+dist-json/         build output, synced to CDN by CI
 ```
 
-## Build
+## The loop (iterate as layers pipeline in)
 
 ```bash
 npm install
-npm run build:json
+npm run coverage      # what's piped into the warehouse but unstyled → your worklist
+# pick an item id, write src/styles/<item>/<render>.ts (a ~6-line spec, below)
+npm run watch         # rebuilds dist-json on save while you tune
+npm run build:json    # one-shot build + validate
+npm run typecheck
+# commit → CI rsyncs dist-json → CDN → warehouse attaches it to the STAC item's renders
 ```
 
-Produces:
-
-- `dist-json/styles/{layer}/{render}.json` — `{ "layers": LayerSpecification[] }`
-- `dist-json/index.json` — manifest `[{ layer, render, path }, ...]` for STAC autodiscovery
+`build:json` produces `dist-json/styles/{layer}/{render}.json` (`{ "layers": [...] }`) and
+`dist-json/index.json` (manifest keyed by `itemId`, the warehouse join key).
 
 ## Adding a style
 
-1. (If new palette) Add to `src/palettes/`.
-2. Create `src/styles/{layer-name}/{render-id}.ts`. Default-export `StyleLayer[]`.
-3. `npm run typecheck`
-4. `npm run build:json` to verify output
-5. Commit + open PR. Tag a release once merged; CI rsyncs JSON to the CDN bucket.
+```ts
+// src/styles/enmin_ucrc_wells_current/by-purpose.ts
+import type { StyleSpec } from '../../types';
+export const spec = {
+  itemId: 'enmin_ucrc_wells',   // == STAC item id (the _current-stripped topic stem / series_id)
+  render: 'by-purpose',
+  kind: 'vector', assets: ['pmtiles'],
+  archetype: 'point', field: 'purpose', palette: 'ucrc-purpose',
+  title: 'UCRC wells by purpose',
+} satisfies StyleSpec;
+```
 
-### Style file rules
+- New color set? add to `src/palettes/` and register it in `src/palettes/index.ts`.
+- Archetypes: `simple` (single symbol), `categorical` (`match` field→palette; `geom: fill|line|circle`),
+  `point` (circle, categorical when `field`+`palette` given). Add an archetype only when no
+  existing one fits.
+- **Bespoke escape hatch:** for cartography no archetype models, `export default [ /* StyleLayer[] */ ]`
+  alongside the `spec` (the `spec` is still required for the itemId join).
 
-- **No `source` declared** in layer fragments. Sources come from the consumer (PMTiles URL via STAC).
-- **No data filters baked in** if the consumer needs to derive sub-layers. Example: `hazards-displacement-contours/default.ts` is one base style; geohaz-v2 splits it 4 ways via `filter: ['==', ['get','type'], '<value>']` at consume time.
-- Hand-translate SLDs. Do **not** use geostyler-mapbox-parser — output is noisy for stepped fills.
+### Rules
+
+- **No `source` in fragments** — the consumer attaches the PMTiles source (via STAC).
+- **`itemId` is the join key** — must equal the warehouse STAC item id, or it never binds.
+- Don't translate SLDs. Pick an archetype + palette; the old SLDs are color reference only.
 
 ## Consume from a viewer
 

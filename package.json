@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build:json": "tsx scripts/build-json.ts",
+    "watch": "tsx watch scripts/build-json.ts",
+    "coverage": "tsx scripts/coverage.ts",
     "typecheck": "tsc --noEmit",
     "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1"
   },

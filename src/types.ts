@@ -18,3 +18,18 @@ export type Binding = {
     colormap_name?: string;
     rescale?: [number, number];
 };
+
+export type Geom = 'fill' | 'line' | 'circle';
+
+// A style spec is the whole authoring surface: the binding (itemId/kind/assets) plus the style
+// *intent* (archetype + field + palette). build-json runs `generate(spec)` → MapLibre GL, so a
+// new style is ~5 lines, not handwritten paint. For true-bespoke cartography, skip the spec and
+// default-export StyleLayer[] instead (the escape hatch). See DESIGN.md.
+export type StyleSpec = Binding & {
+    render: string;                  // render id (default | by-purpose | …); unique per item
+    archetype: 'simple' | 'categorical' | 'point';
+    field?: string;                  // attribute keyed on (categorical / point-by-field)
+    palette?: string;                // named palette (see palettes/index.ts)
+    geom?: Geom;                     // categorical/simple geometry (default 'fill')
+    color?: string;                  // simple/point single color (when no palette)
+};

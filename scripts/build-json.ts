@@ -11,6 +11,7 @@
 import { readdir, mkdir, writeFile, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { generate } from '../src/archetypes';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -41,24 +42,22 @@ const main = async () => {
         const renders = (await readdir(layerDir)).filter(f => f.endsWith('.ts'));
 
         for (const render of renders) {
-            const renderId = render.replace(/\.ts$/, '');
+            const fileId = render.replace(/\.ts$/, '');
             const mod = await import(pathToFileURL(resolve(layerDir, render)).href);
-            const layersOutput = mod.default ?? mod.layers;
-            if (!layersOutput) {
-                console.warn(`skip ${layer.name}/${renderId} — no default export or named 'layers' export`);
-                continue;
-            }
+            const spec = mod.spec;
 
-            // Binding ties the style to a warehouse STAC item id. Without it the warehouse
-            // can't join (the dir name is NOT the item id, e.g. *_current), so the style is
-            // skipped — not an error: most legacy styles get bound (or deleted) only as their
-            // layer lands in the warehouse. Skipped styles just don't autodiscover yet.
-            const binding = mod.binding;
-            if (!binding?.itemId) {
-                console.warn(`· skip ${layer.name}/${renderId} — no 'binding' export yet (not in manifest)`);
+            // Two authoring shapes: (1) a `spec` -> generate the GL fragment (standard); or
+            // (2) a default/`layers` export of handwritten StyleLayer[] (bespoke escape hatch),
+            // which still needs a `spec`/`binding` for the itemId join. No spec -> skip (not an
+            // error): unbound styles just don't autodiscover until bound to a piped layer.
+            if (!spec?.itemId) {
+                console.warn(`· skip ${layer.name}/${fileId} — no 'spec' export yet (not in manifest)`);
                 continue;
             }
-            const dupKey = `${binding.itemId}/${renderId}`;
+            const layersOutput = mod.default ?? mod.layers ?? generate(spec);
+            const renderId = spec.render ?? fileId;
+
+            const dupKey = `${spec.itemId}/${renderId}`;
             if (seen.has(dupKey)) {
                 console.error(`✗ duplicate render '${dupKey}' — itemId+render must be unique`);
                 errors++;
@@ -71,17 +70,17 @@ const main = async () => {
             await mkdir(dirname(outFile), { recursive: true });
             await writeFile(outFile, JSON.stringify({ layers: layersOutput }, null, 2));
             manifest.push({
-                itemId: binding.itemId,
+                itemId: spec.itemId,
                 render: renderId,
-                kind: binding.kind ?? 'vector',
-                assets: binding.assets ?? ['pmtiles'],
+                kind: spec.kind ?? 'vector',
+                assets: spec.assets ?? ['pmtiles'],
                 path: relPath,
                 layer: layer.name,
-                ...(binding.title ? { title: binding.title } : {}),
-                ...(binding.colormap_name ? { colormap_name: binding.colormap_name } : {}),
-                ...(binding.rescale ? { rescale: binding.rescale } : {}),
+                ...(spec.title ? { title: spec.title } : {}),
+                ...(spec.colormap_name ? { colormap_name: spec.colormap_name } : {}),
+                ...(spec.rescale ? { rescale: spec.rescale } : {}),
             });
-            console.log(`+ ${relPath}  ->  ${binding.itemId}/${renderId} (${binding.kind ?? 'vector'})`);
+            console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }
     }
 
