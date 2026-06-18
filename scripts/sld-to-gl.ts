@@ -11,11 +11,32 @@
  *   tsx scripts/sld-to-gl.ts ../sldStyleFiles/styles/hazards/hazards_qFaults_style.sld hazards_qfaults
  */
 import { readFile, mkdir, writeFile } from 'node:fs/promises';
-import { resolve, basename } from 'node:path';
+import { resolve } from 'node:path';
 import SldStyleParser from 'geostyler-sld-parser';
 import MapboxStyleParser from 'geostyler-mapbox-parser';
 
 const ROOT = process.cwd();  // run from the repo root (npm run seed:sld)
+const GEOSERVER = (process.env.GEOSERVER_BASE
+  ?? 'https://ugs-geoserver-prod-flbcoqv7oa-uc.a.run.app/geoserver').replace(/\/+$/, '');
+
+// Source-of-truth is LIVE GeoServer (the committed SLD snapshots elsewhere are stale). `src` is
+// a GeoServer layer `workspace:layer` (fetched via WMS GetStyles), an http(s) SLD URL, or a
+// local .sld file. GetStyles returns the layer's actual current default style.
+async function fetchSld(src: string): Promise<string> {
+    if (/^https?:\/\//.test(src)) {
+        const r = await fetch(src);
+        if (!r.ok) throw new Error(`fetch ${r.status} ${src}`);
+        return r.text();
+    }
+    if (/^[\w-]+:[\w-]+$/.test(src)) {                       // workspace:layer → live GetStyles
+        const ws = src.split(':')[0];
+        const url = `${GEOSERVER}/${ws}/wms?service=WMS&version=1.1.1&request=GetStyles&layers=${encodeURIComponent(src)}`;
+        const r = await fetch(url);
+        if (!r.ok) throw new Error(`GetStyles ${r.status} ${url}`);
+        return r.text();
+    }
+    return readFile(resolve(process.cwd(), src), 'utf8');
+}
 
 // Rewrite a (possibly legacy) GL filter into an expression filter with case-insensitive string
 // equality. Whole filter must be one syntax, so every leaf is converted (combiners all/any/!
@@ -28,6 +49,11 @@ function ci(f: any): any {
     if (op === '!') return ['!', ci(rest[0])];
     const getter = (key: any) =>
         key === '$type' ? ['geometry-type'] : key === '$id' ? ['id'] : ['get', key];
+    if (op === '*=' || op === 'like') {            // SLD PropertyIsLike → substring match (ci)
+        const [key, val] = rest;
+        const needle = String(val).replace(/[%*]/g, '').toLowerCase();
+        return ['in', needle, ['downcase', ['to-string', getter(rest.length === 2 ? key : rest[0])]]];
+    }
     if (['==', '!=', '<', '>', '<=', '>='].includes(op)) {
         const [key, val] = rest;
         if ((op === '==' || op === '!=') && typeof val === 'string' && key !== '$type') {
@@ -52,7 +78,7 @@ async function main() {
         process.exit(2);
     }
 
-    const sld = await readFile(resolve(process.cwd(), sldPath), 'utf8');
+    const sld = await fetchSld(sldPath);
 
     // SLD → GeoStyler intermediate → MapLibre/Mapbox GL.
     const sldParser = new SldStyleParser();
@@ -85,7 +111,7 @@ async function main() {
     await mkdir(dir, { recursive: true });
     const out = resolve(dir, `${render}.ts`);
     const title = String(gs.name || itemId);
-    const body = `// Seeded from GeoServer SLD: ${basename(sldPath)} (geostyler, one-time capture).
+    const body = `// Seeded from live GeoServer: ${sldPath} (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
 

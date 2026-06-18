@@ -1,4 +1,4 @@
-// Seeded from GeoServer SLD: hazards_qFaults_style.sld (geostyler, one-time capture).
+// Seeded from live GeoServer: hazards:hazards_qfaults_current (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
 
@@ -7,7 +7,7 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "Quaternary_Faults",
+    title: "hazards_qfaults_test_style",
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
@@ -16,7 +16,6 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-0",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#e60000",
             "line-width": 2,
             "line-offset": 0
@@ -26,42 +25,24 @@ const layers: StyleLayer[] = [
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<150"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "u150wcqff"
         ]
     },
     {
         "id": "hazards_qfaults-1",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#e69800",
             "line-width": 2,
             "line-offset": 0
@@ -71,42 +52,24 @@ const layers: StyleLayer[] = [
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<15,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "u15kwcqff"
         ]
     },
     {
         "id": "hazards_qfaults-2",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#e69800",
             "line-width": 2,
             "line-offset": 0,
@@ -116,46 +79,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<15,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "moderately constrained"
-            ]
+            "u15kmcqff"
         ]
     },
     {
         "id": "hazards_qfaults-3",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#e69800",
             "line-width": 2,
             "line-offset": 0,
@@ -165,91 +109,53 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<15,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "inferred"
-            ]
+            "u15kiqff"
         ]
     },
     {
         "id": "hazards_qfaults-4",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#4ce600",
             "line-width": 2,
             "line-offset": 0
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<130,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "u130kwcqff"
         ]
     },
     {
         "id": "hazards_qfaults-5",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#4ce600",
             "line-width": 2,
             "line-offset": 0,
@@ -259,46 +165,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<130,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "moderately constrained"
-            ]
+            "u130kmcqff"
         ]
     },
     {
         "id": "hazards_qfaults-6",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#4ce600",
             "line-width": 2,
             "line-offset": 0,
@@ -308,91 +195,53 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<130,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "inferred"
-            ]
+            "u130kiqff"
         ]
     },
     {
         "id": "hazards_qfaults-7",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#005ce6",
             "line-width": 2,
             "line-offset": 0
         },
         "layout": {
-            "line-cap": "round",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<750,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "u750kwcqff"
         ]
     },
     {
         "id": "hazards_qfaults-8",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#005ce6",
             "line-width": 2,
             "line-offset": 0,
@@ -402,46 +251,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<750,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "moderately constrained"
-            ]
+            "u750kmcqff"
         ]
     },
     {
         "id": "hazards_qfaults-9",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#005ce6",
             "line-width": 2,
             "line-offset": 0,
@@ -451,47 +281,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<750,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "inferred"
-            ]
+            "u750kiqff"
         ]
     },
     {
         "id": "hazards_qfaults-10",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
-            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0
         },
@@ -500,43 +310,24 @@ const layers: StyleLayer[] = [
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<2,600,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "u2600kwcqff"
         ]
     },
     {
         "id": "hazards_qfaults-11",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
-            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
@@ -545,47 +336,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<2,600,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "moderately constrained"
-            ]
+            "u2600kmcqff"
         ]
     },
     {
         "id": "hazards_qfaults-12",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
-            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
@@ -594,91 +365,53 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "<2,600,000"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "inferred"
-            ]
+            "u2600kiqff"
         ]
     },
     {
         "id": "hazards_qfaults-13",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#a900e6",
             "line-width": 2,
             "line-offset": 0
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "undetermined"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "well constrained"
-            ]
+            "udwcqff"
         ]
     },
     {
         "id": "hazards_qfaults-14",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#a900e6",
             "line-width": 2,
             "line-offset": 0,
@@ -688,46 +421,27 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "undetermined"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "moderately constrained"
-            ]
+            "udmcqff"
         ]
     },
     {
         "id": "hazards_qfaults-15",
         "type": "line",
         "paint": {
-            "line-opacity": 1,
             "line-color": "#a900e6",
             "line-width": 2,
             "line-offset": 0,
@@ -737,39 +451,21 @@ const layers: StyleLayer[] = [
             ]
         },
         "layout": {
-            "line-cap": "butt",
             "line-join": "round"
         },
         "filter": [
-            "all",
+            "==",
             [
-                "==",
+                "downcase",
                 [
-                    "downcase",
+                    "to-string",
                     [
-                        "to-string",
-                        [
-                            "get",
-                            "faultage"
-                        ]
+                        "get",
+                        "qffhazardunit"
                     ]
-                ],
-                "undetermined"
+                ]
             ],
-            [
-                "==",
-                [
-                    "downcase",
-                    [
-                        "to-string",
-                        [
-                            "get",
-                            "mappingconstraint"
-                        ]
-                    ]
-                ],
-                "inferred"
-            ]
+            "udiqff"
         ]
     }
 ];

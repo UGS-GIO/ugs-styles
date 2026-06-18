@@ -1,4 +1,4 @@
-// Seeded from GeoServer SLD: energy_minerals_oil_gas_style.sld (geostyler, one-time capture).
+// Seeded from live GeoServer: energy_mineral:enmin_oilgasfields_ogm_current (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
 
@@ -7,7 +7,7 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "oilgasfields",
+    title: "energy_minerals_oilgasfields_ogm_current",
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
@@ -16,7 +16,7 @@ const layers: StyleLayer[] = [
         "id": "enmin_oilgasfields_ogm-0",
         "type": "fill",
         "paint": {
-            "fill-color": "#fdbf6f"
+            "fill-color": "#e31a1c"
         },
         "filter": [
             "==",
@@ -30,7 +30,7 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "co2"
+            "gas"
         ]
     },
     {
@@ -54,14 +54,14 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "co2"
+            "gas"
         ]
     },
     {
         "id": "enmin_oilgasfields_ogm-2",
         "type": "fill",
         "paint": {
-            "fill-color": "#e31a1c"
+            "fill-color": "#33a02c"
         },
         "filter": [
             "==",
@@ -75,7 +75,7 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "gas"
+            "oil"
         ]
     },
     {
@@ -99,14 +99,14 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "gas"
+            "oil"
         ]
     },
     {
         "id": "enmin_oilgasfields_ogm-4",
         "type": "fill",
         "paint": {
-            "fill-color": "#33a02c"
+            "fill-color": "#ad42f5"
         },
         "filter": [
             "==",
@@ -120,7 +120,7 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "oil"
+            "coalbed methane"
         ]
     },
     {
@@ -144,14 +144,14 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "oil"
+            "coalbed methane"
         ]
     },
     {
         "id": "enmin_oilgasfields_ogm-6",
         "type": "fill",
         "paint": {
-            "fill-color": "#ad42f5"
+            "fill-color": "#fdbf6f"
         },
         "filter": [
             "==",
@@ -165,7 +165,7 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "coalbed methane"
+            "co2"
         ]
     },
     {
@@ -189,7 +189,7 @@ const layers: StyleLayer[] = [
                     ]
                 ]
             ],
-            "coalbed methane"
+            "co2"
         ]
     }
 ];

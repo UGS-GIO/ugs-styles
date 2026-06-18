@@ -1,4 +1,4 @@
-// Seeded from GeoServer SLD: energy_minerals_pipelines_style.sld (geostyler, one-time capture).
+// Seeded from live GeoServer: energy_mineral:enmin_pipelines_current (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
 
@@ -7,7 +7,7 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "pipelines",
+    title: "energy_minerals_pipelines_current",
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
@@ -455,6 +455,27 @@ const layers: StyleLayer[] = [
                 "petroleum products"
             ]
         ]
+    },
+    {
+        "id": "enmin_pipelines-8",
+        "type": "line",
+        "paint": {
+            "line-width": 4
+        },
+        "layout": {
+            "line-join": "bevel"
+        }
+    },
+    {
+        "id": "enmin_pipelines-9",
+        "type": "line",
+        "paint": {
+            "line-color": "#999999",
+            "line-width": 3
+        },
+        "layout": {
+            "line-join": "bevel"
+        }
     }
 ];
 export default layers;
