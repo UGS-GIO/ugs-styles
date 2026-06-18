@@ -45,6 +45,24 @@ preview` is one-shot. Override the data CDN with `?cdn=<base>`.
 `build:json` produces `dist-json/styles/{layer}/{render}.json` (`{ "layers": [...] }`) and
 `dist-json/index.json` (manifest keyed by `itemId`, the warehouse join key).
 
+## Seeding from legacy GeoServer SLDs (one-time)
+
+GeoServer is being retired; `scripts/sld-to-gl.ts` captures its authoritative SLD cartography
+into committed GL style modules **once**, so nothing is lost. geostyler is a dev-only dep used
+here at authoring time — **not** in the build/publish path; the emitted module is the source of
+truth and is hand-editable thereafter.
+
+```bash
+npm run seed:sld -- <sld-file> <itemId>     # → src/styles/<itemId>/default.ts (bespoke GL)
+npm run dev                                  # preview on real PMTiles — always verify
+```
+
+SLDs live in `ugs-sld-styles` / `sldStyleFiles` (pull fresh from GeoServer with
+`sldStyleFiles ./run.sh pull` while it's still up). The translator preserves every rule's
+filter + paint and rewrites string-equality filters **case-insensitively** (SLD literals drift
+in case vs the live PMTiles values — e.g. `well constrained` vs `Well Constrained`). Always
+preview: field/value drift beyond case will show as a layer that draws nothing.
+
 ## Adding a style
 
 ```ts
