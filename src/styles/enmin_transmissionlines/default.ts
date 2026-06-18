@@ -5,31 +5,30 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "Transmission Lines by Voltage",
+    title: "Transmission Lines",
 } satisfies Binding & { render: string };
 
 const layers: StyleLayer[] = [
     {
-        "id": "enmin_transmissionlines-0",
+        "id": "enmin_transmissionlines-casing",
         "type": "line",
         "paint": {
-            "line-color": [
-                "step",
-                ["to-number", ["get", "voltage_kv"], 0],
-                "#4DAF4A",
-                100, "#1F78B4",
-                200, "#FF7F00",
-                300, "#E31A1C"
-            ],
-            "line-width": [
-                "step",
-                ["to-number", ["get", "voltage_kv"], 0],
-                1.5,
-                100, 2.2,
-                200, 3.2,
-                300, 4.2
-            ],
+            "line-color": "#000000",
+            "line-width": 4,
             "line-opacity": 0.85
+        },
+        "layout": {
+            "line-join": "round",
+            "line-cap": "round"
+        }
+    },
+    {
+        "id": "enmin_transmissionlines-center",
+        "type": "line",
+        "paint": {
+            "line-color": "#ffdd00",
+            "line-width": 3,
+            "line-opacity": 0.95
         },
         "layout": {
             "line-join": "round",
