@@ -1,3 +1,5 @@
+// Seeded from live GeoServer: energy_mineral:enmin_transmissionlines_current (WMS GetStyles → geostyler, one-time capture).
+// GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -5,34 +7,30 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "Transmission Lines",
+    title: "energy_minerals_transmission_lines_style",
 } satisfies Binding & { render: string };
 
+// Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
 const layers: StyleLayer[] = [
     {
-        "id": "enmin_transmissionlines-casing",
+        "id": "enmin_transmissionlines-0",
         "type": "line",
         "paint": {
-            "line-color": "#000000",
-            "line-width": 4,
-            "line-opacity": 0.85
+            "line-width": 4
         },
         "layout": {
-            "line-join": "round",
-            "line-cap": "round"
+            "line-join": "round"
         }
     },
     {
-        "id": "enmin_transmissionlines-center",
+        "id": "enmin_transmissionlines-1",
         "type": "line",
         "paint": {
             "line-color": "#ffdd00",
-            "line-width": 3,
-            "line-opacity": 0.95
+            "line-width": 3
         },
         "layout": {
-            "line-join": "round",
-            "line-cap": "round"
+            "line-join": "round"
         }
     }
 ];

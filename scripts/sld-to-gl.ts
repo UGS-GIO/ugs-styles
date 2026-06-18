@@ -72,13 +72,25 @@ function ci(f: any): any {
 }
 
 async function main() {
-    const [sldPath, itemId, render = 'default'] = process.argv.slice(2);
+    const flags = process.argv.slice(2).filter((a) => a.startsWith('--'));
+    const [sldPath, itemId, render = 'default'] = process.argv.slice(2).filter((a) => !a.startsWith('--'));
+    const dropPoints = flags.includes('--drop-points');
     if (!sldPath || !itemId) {
-        console.error('usage: tsx scripts/sld-to-gl.ts <sld-file> <itemId> [render]');
+        console.error('usage: tsx scripts/sld-to-gl.ts <sld-file> <itemId> [render] [--drop-points]');
         process.exit(2);
     }
 
-    const sld = await fetchSld(sldPath);
+    let sld = await fetchSld(sldPath);
+    // geostyler-sld-parser rejects a <Mark> with no <WellKnownName>. GeoServer styles sometimes
+    // carry bare/decorative point marks; injecting a default lets the valuable polygon/line rules
+    // (e.g. geolunits' 154 per-unit fills) parse instead of failing the whole file.
+    sld = sld.replace(/(<(?:sld:)?Mark>)\s*(?!<(?:sld:)?WellKnownName>)/g, '$1<WellKnownName>circle</WellKnownName>');
+    // --drop-points: strip PointSymbolizers (geostyler can't write some point graphics →
+    // "Unsupported kind"). Safe ONLY for polygon/line layers where points are supplementary;
+    // never use it on an actual point layer (wells, powerplants, …).
+    if (dropPoints) {
+        sld = sld.replace(/<(?:sld:)?PointSymbolizer\b[\s\S]*?<\/(?:sld:)?PointSymbolizer>/g, '');
+    }
 
     // SLD → GeoStyler intermediate → MapLibre/Mapbox GL.
     const sldParser = new SldStyleParser();
