@@ -29,11 +29,18 @@ dist-json/         build output, synced to CDN by CI
 npm install
 npm run coverage      # what's piped into the warehouse but unstyled → your worklist
 # pick an item id, write src/styles/<item>/<render>.ts (a ~6-line spec, below)
-npm run watch         # rebuilds dist-json on save while you tune
+npm run dev           # watch (rebuild on save) + serve the live preview, opens the browser
+#   → edit a spec, save, refresh preview: see the style on the layer's REAL PMTiles
+#   → switch layers via the dropdown, or deep-link ?item=<id>&render=<id>
 npm run build:json    # one-shot build + validate
 npm run typecheck
 # commit → CI rsyncs dist-json → CDN → warehouse attaches it to the STAC item's renders
 ```
+
+**Visual preview (`preview/`)** renders a *locally-built* style on the layer's real PMTiles
+from the CDN — the same source+source-layer binding the warehouse viewer does — so cartography
+is tuned with no publish/reingest. `npm run dev` (watch + serve) is the tight loop; `npm run
+preview` is one-shot. Override the data CDN with `?cdn=<base>`.
 
 `build:json` produces `dist-json/styles/{layer}/{render}.json` (`{ "layers": [...] }`) and
 `dist-json/index.json` (manifest keyed by `itemId`, the warehouse join key).

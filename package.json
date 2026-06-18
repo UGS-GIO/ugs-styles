@@ -9,6 +9,8 @@
     "watch": "tsx watch scripts/build-json.ts",
     "coverage": "tsx scripts/coverage.ts",
     "typecheck": "tsc --noEmit",
+    "preview": "npm run build:json && npx --yes http-server -p 8080 -c-1 -o /preview/",
+    "dev": "npm run build:json && npx --yes concurrently -k -n watch,serve \"tsx watch scripts/build-json.ts\" \"npx --yes http-server -p 8080 -c-1 -o /preview/\"",
     "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1"
   },
   "peerDependencies": {

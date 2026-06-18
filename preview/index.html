@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ugs-styles · local preview</title>
+<link href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" rel="stylesheet" />
+<style>
+  html, body { margin: 0; height: 100%; font: 13px system-ui, sans-serif; }
+  #map { position: absolute; inset: 0; }
+  #panel {
+    position: absolute; z-index: 1; top: 10px; left: 10px; max-width: 340px;
+    background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 10px 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,.15);
+  }
+  #panel h1 { font-size: 13px; margin: 0 0 6px; }
+  #panel select { width: 100%; padding: 4px; margin-bottom: 6px; }
+  #meta { color: #555; font-size: 11px; white-space: pre-wrap; word-break: break-all; }
+  #err { color: #b00; font-size: 12px; margin-top: 6px; }
+  .hint { color: #888; font-size: 11px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<div id="panel">
+  <h1>ugs-styles · local preview</h1>
+  <select id="pick"></select>
+  <div id="meta"></div>
+  <div id="err"></div>
+  <div class="hint">Edit a spec → <code>npm run watch</code> rebuilds dist-json → refresh.</div>
+</div>
+<div id="map"></div>
+
+<script type="module">
+import maplibregl from 'https://esm.sh/maplibre-gl@5';
+import { Protocol } from 'https://esm.sh/pmtiles@4';
+
+// Local preview harness: render a locally-built style (dist-json) on the layer's real PMTiles
+// from the CDN — the same binding the warehouse viewer does (inject source + source-layer that
+// the style fragments omit). No publish/reingest in the loop. ?item= & ?render= deep-link a layer.
+const params = new URLSearchParams(location.search);
+const CDN = (params.get('cdn') || 'https://maps-assets.geology.utah.gov/warehouse').replace(/\/+$/, '');
+const POSITRON = 'https://tiles.openfreemap.org/styles/positron';
+const UTAH = [-111.7, 39.3];
+
+maplibregl.addProtocol('pmtiles', new Protocol().tile);
+const map = new maplibregl.Map({ container: 'map', style: POSITRON, center: UTAH, zoom: 6 });
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
+
+const err = (m) => { document.getElementById('err').textContent = m || ''; };
+const pmtilesUrl = (itemId) => `${CDN}/pmtiles/${itemId}/${itemId}.pmtiles`;
+
+let manifest = [];
+async function boot() {
+  manifest = await (await fetch('../dist-json/index.json')).json();
+  if (!manifest.length) return err('dist-json/index.json is empty — run `npm run build:json`.');
+  const sel = document.getElementById('pick');
+  sel.innerHTML = manifest
+    .map((e, i) => `<option value="${i}">${e.itemId} · ${e.render} (${e.kind})</option>`)
+    .join('');
+  const want = params.get('item');
+  const start = Math.max(0, manifest.findIndex((e) =>
+    e.itemId === want && (!params.get('render') || e.render === params.get('render'))));
+  sel.value = String(start);
+  sel.onchange = () => apply(manifest[+sel.value]);
+  await new Promise((r) => map.on('load', r));
+  apply(manifest[start]);
+}
+
+let active = [];   // ids of style layers currently added
+async function apply(entry) {
+  err('');
+  for (const id of active) if (map.getLayer(id)) map.removeLayer(id);
+  if (map.getSource('preview')) map.removeSource('preview');
+  active = [];
+
+  document.getElementById('meta').textContent =
+    `itemId: ${entry.itemId}\nrender: ${entry.render}\nassets: ${(entry.assets || []).join(', ')}\npmtiles: ${pmtilesUrl(entry.itemId)}`;
+
+  if (entry.kind === 'raster') return err('raster render — preview is vector-only (COGs are pre-styled).');
+
+  const { layers } = await (await fetch(`../dist-json/${entry.path}`)).json();
+  map.addSource('preview', { type: 'vector', url: `pmtiles://${pmtilesUrl(entry.itemId)}` });
+  // Style fragments omit source/source-layer (StyleLayer); inject them like the warehouse viewer.
+  // The PMTiles source-layer is the item id (warehouse pmtiles:layers = [stem]).
+  layers.forEach((l, i) => {
+    const id = `preview-${i}`;
+    map.addLayer({ ...l, id, source: 'preview', 'source-layer': entry.itemId });
+    active.push(id);
+  });
+
+  // Fit to the layer's data once tiles arrive (best-effort).
+  map.once('idle', () => {
+    try {
+      const feats = map.querySourceFeatures('preview', { sourceLayer: entry.itemId });
+      if (!feats.length) return;
+      const b = new maplibregl.LngLatBounds();
+      for (const f of feats) {
+        const g = f.geometry; if (!g) continue;
+        const coords = g.type === 'Point' ? [g.coordinates] : g.coordinates.flat(Infinity);
+        for (let i = 0; i + 1 < coords.length; i += (g.type === 'Point' ? 2 : 1)) {
+          const c = g.type === 'Point' ? coords : coords[i];
+          if (Array.isArray(c) && c.length >= 2) b.extend(c);
+        }
+      }
+      if (!b.isEmpty()) map.fitBounds(b, { padding: 40, maxZoom: 12, duration: 0 });
+    } catch { /* fit is best-effort */ }
+  });
+}
+
+boot().catch((e) => err(String(e)));
+</script>
+</body>
+</html>
