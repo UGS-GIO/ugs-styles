@@ -8,6 +8,7 @@
     "build:json": "tsx scripts/build-json.ts",
     "watch": "tsx watch scripts/build-json.ts",
     "coverage": "tsx scripts/coverage.ts",
+    "validate": "tsx scripts/validate.ts",
     "seed:sld": "npx --yes esbuild scripts/sld-to-gl.ts --bundle --platform=node --format=cjs --outfile=node_modules/.cache/sld-to-gl.cjs --log-level=error && node node_modules/.cache/sld-to-gl.cjs",
     "typecheck": "tsc --noEmit",
     "preview": "npm run build:json && npx --yes http-server -p 8080 -c-1 -o /preview/",
@@ -21,6 +22,8 @@
     "@types/node": "^25.6.0",
     "geostyler-mapbox-parser": "^6.2.0",
     "geostyler-sld-parser": "^6.1.2",
+    "hyparquet": "^1.26.0",
+    "hyparquet-compressors": "^1.1.1",
     "maplibre-gl": "^5.23.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3"

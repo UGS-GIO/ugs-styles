@@ -36,6 +36,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build:json
+      # Gate the release on data reality: fails if a style keys on a field absent from the live
+      # GeoParquet (value/case drift only warns). Catches "builds clean but draws nothing".
+      - run: npm run validate
 
       # Workload Identity Federation. Both secrets must be set in repo settings:
       #   GCP_WIF_PROVIDER  — full resource name of the WIF provider

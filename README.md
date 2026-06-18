@@ -34,8 +34,14 @@ npm run dev           # watch (rebuild on save) + serve the live preview, opens 
 #   → switch layers via the dropdown, or deep-link ?item=<id>&render=<id>
 npm run build:json    # one-shot build + validate
 npm run typecheck
+npm run validate      # check styled field/values against the LIVE GeoParquet (drift = bug)
 # commit → CI rsyncs dist-json → CDN → warehouse attaches it to the STAC item's renders
 ```
+
+**`validate`** reads each layer's GeoParquet (hyparquet, dev-only) and fails if a style keys on
+a field that isn't in the data; warns on value/case drift (palette keys / filter literals not
+present) and reports data values that fall through to `other`. It runs in the publish CI, so a
+"builds clean but draws nothing" style can't ship. `--strict` makes warnings fail too.
 
 **Visual preview (`preview/`)** renders a *locally-built* style on the layer's real PMTiles
 from the CDN — the same source+source-layer binding the warehouse viewer does — so cartography
