@@ -20,6 +20,11 @@ jobs:
       GCP_PROJECT: ut-dnr-ugs-maps-prod
       GCS_BUCKET: ut-dnr-ugs-maps-prod-public
       GCS_PREFIX: styles
+      # Warehouse rebind: after the CDN is updated, kick the cheap restyle job so STAC items'
+      # `renders` re-bind to the new styles (no full reingest). Lives in the compute project.
+      WAREHOUSE_PROJECT: ut-dnr-ugs-backend-tools
+      WAREHOUSE_REGION: us-central1
+      RESTYLE_JOB: ugs-warehouse-restyle
     steps:
       - uses: actions/checkout@v4
 
@@ -52,3 +57,21 @@ jobs:
           gsutil -m rsync -r -d dist-json/ gs://${GCS_BUCKET}/${GCS_PREFIX}/
           gsutil -m setmeta -h "Cache-Control:public, max-age=300" \
             "gs://${GCS_BUCKET}/${GCS_PREFIX}/**/*.json"
+
+      # Rebind STAC renders to the just-published styles. `--wait` surfaces the result in this
+      # run; the job re-fetches the manifest and rewrites only the items whose renders changed
+      # (seconds — no data reingest). The CDN is already updated above, so styles are live for
+      # any live-manifest consumer even if this step is skipped.
+      #
+      # Work-box prerequisites (one-time):
+      #   1. Create the job (same image as the ingest job, restyle command):
+      #        gcloud run jobs create ugs-warehouse-restyle \
+      #          --project ut-dnr-ugs-backend-tools --region us-central1 \
+      #          --image <same image as ugs-warehouse-ingest> \
+      #          --command python --args -m,ugs_warehouse.restyle
+      #   2. Grant the publish SA (GCP_SERVICE_ACCOUNT) on the compute project:
+      #        roles/run.developer  +  roles/iam.serviceAccountUser (on the job's runtime SA).
+      - name: Rebind warehouse STAC renders
+        run: |
+          gcloud run jobs execute "${RESTYLE_JOB}" \
+            --project "${WAREHOUSE_PROJECT}" --region "${WAREHOUSE_REGION}" --wait
