@@ -19,6 +19,16 @@ const STYLES_DIR = resolve(ROOT, 'src', 'styles');
 const OUT_DIR = resolve(ROOT, 'dist-json');
 const STYLES_OUT = resolve(OUT_DIR, 'styles');
 
+// A `fill` layer with no fill-color / fill-pattern renders MapLibre's default OPAQUE BLACK — an
+// artifact of SLD polygons that were stroke-only (no `<Fill>`). The SLD→GL seed emits an empty
+// fill for those; drop it so the layer is outline-only as intended (we do NOT invent a fill
+// color — see feedback-no-custom-styling). Stroke/label layers in the same style are kept.
+type GLLayer = { type?: string; paint?: Record<string, unknown> };
+const isPaintlessFill = (l: GLLayer): boolean =>
+    l?.type === 'fill' && !l?.paint?.['fill-color'] && !l?.paint?.['fill-pattern'];
+const dropPaintlessFills = (layers: GLLayer[]): GLLayer[] =>
+    Array.isArray(layers) ? layers.filter((l) => !isPaintlessFill(l)) : layers;
+
 // Manifest entry keyed by STAC item id — what the warehouse joins on (docs/STYLING.md).
 // `layer` (the dir name) is kept for human debugging only.
 type ManifestEntry = {
@@ -54,7 +64,7 @@ const main = async () => {
                 console.warn(`· skip ${layer.name}/${fileId} — no 'spec' export yet (not in manifest)`);
                 continue;
             }
-            const layersOutput = mod.default ?? mod.layers ?? generate(spec);
+            const layersOutput = dropPaintlessFills(mod.default ?? mod.layers ?? generate(spec));
             const renderId = spec.render ?? fileId;
 
             const dupKey = `${spec.itemId}/${renderId}`;
