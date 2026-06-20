@@ -36,6 +36,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run build:json
+      # Bake pie-wedge sprite sheets (UCRC wells by-boxtype) from the live GeoParquet → dist-json,
+      # so the icon render publishes with its sprites. Must run after build:json (which wipes dist).
+      - run: npm run gen:sprites
       # Gate the release on data reality: fails if a style keys on a field absent from the live
       # GeoParquet (value/case drift only warns). Catches "builds clean but draws nothing".
       - run: npm run validate

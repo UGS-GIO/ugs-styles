@@ -44,6 +44,7 @@ const UTAH = [-111.7, 39.3];
 
 maplibregl.addProtocol('pmtiles', new Protocol().tile);
 const map = new maplibregl.Map({ container: 'map', style: POSITRON, center: UTAH, zoom: 6 });
+window.map = map;  // debug handle
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }));
 
 const err = (m) => { document.getElementById('err').textContent = m || ''; };
@@ -79,6 +80,23 @@ async function apply(entry) {
   if (entry.kind === 'raster') return err('raster render — preview is vector-only (COGs are pre-styled).');
 
   const { layers } = await (await fetch(`../dist-json/${entry.path}`)).json();
+
+  // Icon renders (e.g. wells by-boxtype) carry a baked sprite sheet — slice each frame into the
+  // map via addImage so icon-image names resolve (same as the warehouse viewer).
+  if (entry.sprite) {
+    const hi = (window.devicePixelRatio || 1) >= 1.5 ? '@2x' : '';
+    const base = `../dist-json/${entry.sprite}`;
+    const [idx, blob] = await Promise.all([
+      fetch(`${base}${hi}.json`).then((r) => r.json()),
+      fetch(`${base}${hi}.png`).then((r) => r.blob()),
+    ]);
+    const sheet = await createImageBitmap(blob);
+    for (const [name, f] of Object.entries(idx)) {
+      if (map.hasImage(name)) continue;
+      map.addImage(name, await createImageBitmap(sheet, f.x, f.y, f.width, f.height), { pixelRatio: f.pixelRatio });
+    }
+  }
+
   map.addSource('preview', { type: 'vector', url: `pmtiles://${pmtilesUrl(entry.itemId)}` });
   // Style fragments omit source/source-layer (StyleLayer); inject them like the warehouse viewer.
   // The PMTiles source-layer is the item id (warehouse pmtiles:layers = [stem]).
