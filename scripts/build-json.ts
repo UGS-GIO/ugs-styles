@@ -36,6 +36,7 @@ type ManifestEntry = {
     assets: string[]; path: string; layer: string; title?: string;
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
+    legend?: { label: string; color: string }[];  // explicit legend for renders with no derivable paint
 };
 
 const main = async () => {
@@ -91,6 +92,7 @@ const main = async () => {
                 ...(spec.colormap_name ? { colormap_name: spec.colormap_name } : {}),
                 ...(spec.rescale ? { rescale: spec.rescale } : {}),
                 ...(spec.sprite ? { sprite: spec.sprite } : {}),
+                ...(spec.legend ? { legend: spec.legend } : {}),
             });
             console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }

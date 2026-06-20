@@ -11,7 +11,7 @@
  */
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
-import { UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
+import { UCRC_BOX_TYPE_CODES, UCRC_BOX_TYPE_COLORS, UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
 
 export const spec = {
     itemId: 'enmin_ucrc_wells',
@@ -20,7 +20,10 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'UCRC wells by box type',
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
-} satisfies Binding & { render: string; sprite: string };
+    // Explicit legend — icon (pie-wedge) renders have no paint color for the viewer to derive a
+    // legend from, so carry the wedge codes→colors here (the authoritative palette).
+    legend: UCRC_BOX_TYPE_CODES.map((c) => ({ label: c, color: UCRC_BOX_TYPE_COLORS[c] ?? '#BDBDBD' })),
+} satisfies Binding & { render: string; sprite: string; legend: { label: string; color: string }[] };
 
 const layers: StyleLayer[] = [
     {
