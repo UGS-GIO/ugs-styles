@@ -92,6 +92,12 @@ async function main() {
         sld = sld.replace(/<(?:sld:)?PointSymbolizer\b[\s\S]*?<\/(?:sld:)?PointSymbolizer>/g, '');
     }
 
+    // Live GeoServer GetStyles returns `version="1.0"` / `"1.1"`, but geostyler-sld-parser only
+    // accepts the full `1.0.0` / `1.1.0`. Normalise the StyledLayerDescriptor version so live
+    // seeding works (the committed `.sld` snapshots already use the full form). WMS version="1.1.1"
+    // is left untouched (the exact `"1.1"` / `"1.0"` patterns don't match it).
+    sld = sld.replace(/(\bversion=")1\.0(")/g, '$11.0.0$2').replace(/(\bversion=")1\.1(")/g, '$11.1.0$2');
+
     // SLD → GeoStyler intermediate → MapLibre/Mapbox GL.
     const sldParser = new SldStyleParser();
     const { output: gs, errors: e1, warnings: w1 } = await sldParser.readStyle(sld);
