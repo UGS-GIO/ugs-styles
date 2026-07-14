@@ -29,7 +29,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -53,7 +53,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -77,7 +77,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -101,7 +101,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -125,7 +125,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -149,7 +149,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -173,7 +173,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -197,7 +197,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -221,7 +221,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -245,7 +245,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -269,7 +269,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
@@ -293,7 +293,7 @@ const layers: StyleLayer[] = [
                     "to-string",
                     [
                         "get",
-                        "welltype_name"
+                        "welltype"
                     ]
                 ]
             ],
