@@ -14,20 +14,24 @@
     "preview": "npm run build:json && npm run gen:sprites && npx --yes http-server -p 8080 -c-1 -o /preview/",
     "dev": "npm run build:json && npx --yes concurrently -k -n watch,serve \"tsx watch scripts/build-json.ts\" \"npx --yes http-server -p 8080 -c-1 -o /preview/\"",
     "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1",
-    "gen:sprites": "tsx scripts/gen-pie-sprites.ts"
+    "gen:sprites": "tsx scripts/gen-pie-sprites.ts",
+    "lint": "eslint ."
   },
   "peerDependencies": {
     "maplibre-gl": ">=4"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@napi-rs/canvas": "^1.0.0",
     "@types/node": "^25.6.0",
+    "eslint": "^10.7.0",
     "geostyler-mapbox-parser": "^6.2.0",
     "geostyler-sld-parser": "^6.1.2",
     "hyparquet": "^1.26.0",
     "hyparquet-compressors": "^1.1.1",
     "maplibre-gl": "^5.23.0",
     "tsx": "^4.21.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.64.0"
   }
 }

@@ -46,9 +46,9 @@ const main = async () => {
     }
   }
 
-  const manifest = JSON.parse(
+  const manifest: { itemId: string }[] = JSON.parse(
     await readFile(resolve(__dirname, '..', 'dist-json', 'index.json'), 'utf8'),
-  ) as { itemId: string }[];
+  );
   const bound = new Set(manifest.map((e) => e.itemId));
 
   const styled = [...itemIds].filter((id) => bound.has(id)).sort();
@@ -65,4 +65,4 @@ const main = async () => {
   console.log();
 };
 
-main().catch((err) => { console.error(err); process.exit(1); });
+try { await main(); } catch (err) { console.error(err); process.exit(1); }

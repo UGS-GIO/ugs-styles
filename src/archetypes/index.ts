@@ -16,7 +16,10 @@ export function generate(spec: StyleSpec): StyleLayer[] {
         case 'categorical': return categorical(spec);
         case 'point': return point(spec);
         case 'simple': return simple(spec);
-        default: throw new Error(`${spec.itemId}/${spec.render}: unknown archetype '${spec.archetype}'`);
+        default: {
+            const bad: never = spec.archetype;
+            throw new Error(`${spec.itemId}/${spec.render}: unknown archetype '${String(bad)}'`);
+        }
     }
 }
 
