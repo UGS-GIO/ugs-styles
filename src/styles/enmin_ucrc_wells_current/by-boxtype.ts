@@ -9,6 +9,7 @@
  * doesn't carry these). The warehouse passes it into the STAC render block; the viewer
  * map.addSprite()s it before applying this layer.
  */
+import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
 import { UCRC_BOX_TYPE_CODES, UCRC_BOX_TYPE_COLORS, UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
@@ -25,15 +26,26 @@ export const spec = {
     legend: UCRC_BOX_TYPE_CODES.map((c) => ({ label: c, color: UCRC_BOX_TYPE_COLORS[c] ?? '#BDBDBD' })),
 } satisfies Binding & { render: string; sprite: string; legend: { label: string; color: string }[] };
 
+// icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
+const iconImage: ExpressionSpecification = [
+    'concat', `${UCRC_BOX_TYPE_NAMESPACE}-`, ['coalesce', ['get', 'box_type_codes'], ''],
+];
+
+// Draw CORE wells on top of every other box type: with icon-allow-overlap, a
+// higher symbol-sort-key paints last (on top). CORE-containing codes → 1, rest → 0.
+const coreOnTop: ExpressionSpecification = [
+    'case', ['in', 'CORE', ['coalesce', ['get', 'box_type_codes'], '']], 1, 0,
+];
+
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ucrc_wells-boxtype',
         type: 'symbol',
         layout: {
-            'icon-image': ['concat', `${UCRC_BOX_TYPE_NAMESPACE}-`,
-                ['coalesce', ['get', 'box_type_codes'], '']] as unknown as never,
-            'icon-size': interpolateByZoom([[4, 0.1], [7, 0.2], [10, 0.3], [13, 0.4], [16, 0.5]]) as unknown as never,
+            'icon-image': iconImage,
+            'icon-size': interpolateByZoom([[4, 0.1], [7, 0.2], [10, 0.3], [13, 0.4], [16, 0.5]]),
             'icon-allow-overlap': true,
+            'symbol-sort-key': coreOnTop,
         },
     },
 ];
