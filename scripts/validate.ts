@@ -29,10 +29,15 @@ const strict = process.argv.includes('--strict');
 
 type Ref = { field: string; value?: string; ci?: boolean };
 
+// A GL filter node: JSON-shaped, so a concrete recursive type (no `any`, no
+// `unknown`) covers every leaf, array and object the filter can hold.
+type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+const isArray = (x: Json): x is Json[] => Array.isArray(x);
+
 // Pull (field, value) requirements out of a GL filter (expression or legacy), incl. the
 // case-insensitive `["==", ["downcase",["to-string",["get",f]]], v]` shape the seeder emits.
-function refsFromFilter(f: any, out: Ref[]): void {
-  if (!Array.isArray(f)) return;
+function refsFromFilter(f: Json, out: Ref[]): void {
+  if (!isArray(f)) return;
   const [op, ...rest] = f;
   if (op === 'all' || op === 'any' || op === 'none' || op === '!') {
     rest.forEach((r) => refsFromFilter(r, out));
@@ -41,14 +46,16 @@ function refsFromFilter(f: any, out: Ref[]): void {
   if (op === '==' || op === '!=') {
     const [lhs, val] = rest;
     const g = getField(lhs);
+    const value = typeof val === 'string' ? val : typeof val === 'number' ? String(val) : undefined;
     if (g && typeof val === 'string') out.push({ field: g.field, value: val, ci: g.ci });
     else if (g) out.push({ field: g.field });
-    else if (typeof lhs === 'string' && !lhs.startsWith('$')) out.push({ field: lhs, value: String(val) });
+    else if (typeof lhs === 'string' && !lhs.startsWith('$')) out.push({ field: lhs, value });
   }
 }
-function getField(node: any): { field: string; ci: boolean } | null {
-  if (Array.isArray(node) && node[0] === 'get' && typeof node[1] === 'string') return { field: node[1], ci: false };
-  if (Array.isArray(node) && (node[0] === 'downcase' || node[0] === 'to-string')) {
+function getField(node: Json | undefined): { field: string; ci: boolean } | null {
+  if (node == null || !isArray(node)) return null;
+  if (node[0] === 'get' && typeof node[1] === 'string') return { field: node[1], ci: false };
+  if (node[0] === 'downcase' || node[0] === 'to-string') {
     const inner = getField(node[1]);
     return inner ? { field: inner.field, ci: node[0] === 'downcase' || inner.ci } : null;
   }
@@ -58,7 +65,7 @@ function getField(node: any): { field: string; ci: boolean } | null {
 async function main() {
   // Load each style module's spec (+ bespoke layers), like build-json.
   type Style = { itemId: string; render: string; field?: string; paletteKeys?: string[];
-    layers?: any[]; kind: string };
+    layers?: Record<string, Json>[]; kind: string };
   const styles: Style[] = [];
   for (const layer of await readdir(STYLES_DIR, { withFileTypes: true })) {
     if (!layer.isDirectory()) continue;
@@ -79,7 +86,11 @@ async function main() {
   let errors = 0, warnings = 0;
   // Group by itemId — one parquet read per layer, covering every field its styles reference.
   const byItem = new Map<string, Style[]>();
-  for (const s of styles) (byItem.get(s.itemId) ?? byItem.set(s.itemId, []).get(s.itemId)!).push(s);
+  for (const s of styles) {
+    const arr = byItem.get(s.itemId);
+    if (arr) arr.push(s);
+    else byItem.set(s.itemId, [s]);
+  }
 
   for (const [itemId, group] of byItem) {
     if (group.every((s) => s.kind === 'raster')) { console.log(`· ${itemId}: raster — skipped`); continue; }
@@ -89,7 +100,7 @@ async function main() {
     for (const s of group) {
       if (s.field && s.paletteKeys) for (const v of s.paletteKeys) refs.push({ field: s.field, value: v });
       else if (s.field) refs.push({ field: s.field });
-      for (const l of s.layers ?? []) if (l?.filter) refsFromFilter(l.filter, refs);
+      for (const l of s.layers ?? []) if (l.filter) refsFromFilter(l.filter, refs);
     }
     const fields = [...new Set(refs.map((r) => r.field))];
     if (!fields.length) { console.log(`· ${itemId}: no field-keyed styling — ok`); continue; }
@@ -103,7 +114,8 @@ async function main() {
       const present = fields.filter((f) => cols.includes(f));
       rows = present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [];
     } catch (e) {
-      console.log(`✗ ${itemId}: cannot read ${url} — ${String((e as Error).message).slice(0, 80)}`);
+      const msg = e instanceof Error ? e.message : String(e);
+      console.log(`✗ ${itemId}: cannot read ${url} — ${msg.slice(0, 80)}`);
       errors++; continue;
     }
 
@@ -116,19 +128,21 @@ async function main() {
     // Value coverage (warnings).
     const seenMiss = new Set<string>();
     for (const r of refs) {
-      if (!r.value || !distinct.has(r.field)) continue;
-      const vals = distinct.get(r.field)!;
+      const val = r.value;
+      const vals = val ? distinct.get(r.field) : undefined;
+      if (!val || !vals) continue;
       const hit = r.ci
-        ? [...vals].some((v) => v.toLowerCase() === r.value!.toLowerCase())
-        : vals.has(r.value);
-      const key = `${r.field}=${r.value}`;
+        ? [...vals].some((v) => v.toLowerCase() === val.toLowerCase())
+        : vals.has(val);
+      const key = `${r.field}=${val}`;
       if (!hit && !seenMiss.has(key)) { seenMiss.add(key); console.log(`  ! ${itemId}: '${r.field}' value ${JSON.stringify(r.value)} not in data`); warnings++; }
     }
     // Uncovered data values for categorical palettes (info).
     for (const s of group) {
-      if (!s.field || !s.paletteKeys || !distinct.has(s.field)) continue;
+      const col = s.field ? distinct.get(s.field) : undefined;
+      if (!s.field || !s.paletteKeys || !col) continue;
       const keys = new Set(s.paletteKeys.map((k) => k.toLowerCase()));
-      const uncovered = [...distinct.get(s.field)!].filter((v) => v && !keys.has(v.toLowerCase()) && v !== 'null');
+      const uncovered = [...col].filter((v) => v && !keys.has(v.toLowerCase()) && v !== 'null');
       if (uncovered.length) console.log(`  · ${itemId}/${s.render}: ${uncovered.length} data value(s) fall to 'other': ${uncovered.slice(0, 6).join(', ')}${uncovered.length > 6 ? '…' : ''}`);
     }
     if (!seenMiss.size && fields.every((f) => cols.includes(f))) console.log(`✓ ${itemId}: fields + values OK`);
@@ -138,4 +152,4 @@ async function main() {
   if (errors || (strict && warnings)) process.exit(1);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+try { await main(); } catch (e) { console.error(e); process.exit(1); }

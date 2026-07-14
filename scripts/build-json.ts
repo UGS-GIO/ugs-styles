@@ -25,7 +25,7 @@ const STYLES_OUT = resolve(OUT_DIR, 'styles');
 // color — see feedback-no-custom-styling). Stroke/label layers in the same style are kept.
 type GLLayer = { type?: string; paint?: Record<string, unknown> };
 const isPaintlessFill = (l: GLLayer): boolean =>
-    l?.type === 'fill' && !l?.paint?.['fill-color'] && !l?.paint?.['fill-pattern'];
+    l.type === 'fill' && !l.paint?.['fill-color'] && !l.paint?.['fill-pattern'];
 const dropPaintlessFills = (layers: GLLayer[]): GLLayer[] =>
     Array.isArray(layers) ? layers.filter((l) => !isPaintlessFill(l)) : layers;
 
@@ -107,7 +107,4 @@ const main = async () => {
     }
 };
 
-main().catch(err => {
-    console.error(err);
-    process.exit(1);
-});
+try { await main(); } catch (err) { console.error(err); process.exit(1); }

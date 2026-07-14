@@ -97,7 +97,7 @@ async function distinctCombos(): Promise<string[]> {
     const rows = await parquetReadObjects({ file, columns: [FIELD], compressors });
     const set = new Set<string>();
     for (const r of rows) {
-        const v = (r as Record<string, unknown>)[FIELD];
+        const v = r[FIELD];
         if (typeof v === 'string' && v.trim()) set.add(v.trim());
     }
     return [...set].sort();
@@ -115,4 +115,4 @@ async function main(): Promise<void> {
     console.log(`[pie-sprites] wrote sprite.{png,json} + sprite@2x.{png,json} → ${OUT_DIR}`);
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+try { await main(); } catch (err) { console.error(err); process.exit(1); }

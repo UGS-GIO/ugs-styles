@@ -1,17 +1,23 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 
 /**
- * Build a maplibre `match` expression mapping a feature property's string
- * value to a color (or any string). Falls back to defaultValue when no match.
+ * Map a feature property's string value to a color (or any string) via a
+ * palette object, falling back to `defaultValue` when the value is missing or
+ * not in the palette.
+ *
+ * Built as a fixed-arity object lookup (`get <value> from a literal palette`)
+ * rather than a variadic `match`: the lookup form is fully type-checkable, so
+ * this stays cast-free. Behaviour matches `match` for string→string maps.
  */
 export const matchByField = (
     field: string,
     matches: Record<string, string>,
     defaultValue: string,
-): ExpressionSpecification => {
-    const expr: unknown[] = ['match', ['coalesce', ['get', field], ''], ...Object.entries(matches).flat(), defaultValue];
-    return expr as unknown as ExpressionSpecification;
-};
+): ExpressionSpecification => [
+    'coalesce',
+    ['get', ['coalesce', ['get', field], ''], ['literal', matches]],
+    defaultValue,
+];
 
 /**
  * Build a maplibre `interpolate` expression on zoom — common pattern for
@@ -19,7 +25,4 @@ export const matchByField = (
  */
 export const interpolateByZoom = (
     stops: Array<[number, number]>,
-): ExpressionSpecification => {
-    const expr: unknown[] = ['interpolate', ['linear'], ['zoom'], ...stops.flat()];
-    return expr as unknown as ExpressionSpecification;
-};
+): ExpressionSpecification => ['interpolate', ['linear'], ['zoom'], ...stops.flat()];

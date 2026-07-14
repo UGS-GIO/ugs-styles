@@ -41,25 +41,35 @@ async function fetchSld(src: string): Promise<string> {
 // Rewrite a (possibly legacy) GL filter into an expression filter with case-insensitive string
 // equality. Whole filter must be one syntax, so every leaf is converted (combiners all/any/!
 // are valid expressions; legacy `none`/`in` are rebuilt). $type/$id map to their expression form.
-function ci(f: any): any {
-    if (!Array.isArray(f)) return f;
+// JSON-shaped values (the parser's GL layers + filters), so a concrete recursive
+// type (no `any`, no `unknown`) covers every leaf, array and object it emits.
+type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+
+const isArray = (x: Json): x is Json[] => Array.isArray(x);
+const CMP_OPS = ['==', '!=', '<', '>', '<=', '>='];
+
+// Stringify only genuine scalars — objects/arrays aren't valid SLD literals here.
+const scalar = (v: Json | undefined): string => (typeof v === 'string' || typeof v === 'number') ? String(v) : '';
+
+function ci(f: Json | undefined): Json {
+    if (f == null || !isArray(f)) return f ?? null;
     const [op, ...rest] = f;
     if (op === 'all' || op === 'any') return [op, ...rest.map(ci)];
     if (op === 'none') return ['!', ['any', ...rest.map(ci)]];
     if (op === '!') return ['!', ci(rest[0])];
-    const getter = (key: any) =>
-        key === '$type' ? ['geometry-type'] : key === '$id' ? ['id'] : ['get', key];
+    const getter = (key: Json | undefined): Json =>
+        key === '$type' ? ['geometry-type'] : key === '$id' ? ['id'] : ['get', key ?? null];
     if (op === '*=' || op === 'like') {            // SLD PropertyIsLike → substring match (ci)
         const [key, val] = rest;
-        const needle = String(val).replace(/[%*]/g, '').toLowerCase();
+        const needle = scalar(val).replace(/[%*]/g, '').toLowerCase();
         return ['in', needle, ['downcase', ['to-string', getter(rest.length === 2 ? key : rest[0])]]];
     }
-    if (['==', '!=', '<', '>', '<=', '>='].includes(op)) {
+    if (typeof op === 'string' && CMP_OPS.includes(op)) {
         const [key, val] = rest;
         if ((op === '==' || op === '!=') && typeof val === 'string' && key !== '$type') {
             return [op, ['downcase', ['to-string', getter(key)]], val.toLowerCase()];
         }
-        return [op, getter(key), val];
+        return [op, getter(key), val ?? null];
     }
     if (op === 'in' || op === '!in') {
         const [key, ...vals] = rest;
@@ -111,7 +121,7 @@ async function main() {
     (w2 ?? []).forEach((w) => console.warn(`  ! gl: ${w}`));
 
     const style = typeof mb === 'string' ? JSON.parse(mb) : mb;
-    const rawLayers: any[] = style?.layers ?? [];
+    const rawLayers: Record<string, Json>[] = style?.layers ?? [];
     if (!rawLayers.length) throw new Error('translation produced no layers');
 
     // Strip source/source-layer (the warehouse viewer injects them per item), re-id by item,
@@ -119,8 +129,8 @@ async function main() {
     // attribute values (e.g. SLD 'well constrained' vs data 'Well Constrained'), which silently
     // matches nothing in MapLibre. Lowercasing both sides preserves the SLD's intent.
     const layers = rawLayers.map((l, i) => {
-        const { source, 'source-layer': _sl, id, filter, ...rest } = l;
-        const out: any = { id: `${itemId}-${i}`, ...rest };
+        const { source, 'source-layer': sourceLayer, id, filter, ...rest } = l;
+        const out: Record<string, Json> = { id: `${itemId}-${i}`, ...rest };
         if (filter) out.filter = ci(filter);
         return out;
     });
@@ -128,7 +138,7 @@ async function main() {
     const dir = resolve(ROOT, 'src', 'styles', itemId);
     await mkdir(dir, { recursive: true });
     const out = resolve(dir, `${render}.ts`);
-    const title = String(gs.name || itemId);
+    const title = gs.name || itemId;
     const body = `// Seeded from live GeoServer: ${sldPath} (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
 import type { Binding, StyleLayer } from '../../types';
@@ -149,4 +159,4 @@ export default layers;
     console.log(`+ ${out}  (${layers.length} layer(s) from ${rawLayers.length} SLD rule(s))`);
 }
 
-main().catch((err) => { console.error(err); process.exit(1); });
+try { await main(); } catch (err) { console.error(err); process.exit(1); }
