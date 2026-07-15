@@ -15,7 +15,8 @@
     "dev": "npm run build:json && npx --yes concurrently -k -n watch,serve \"tsx watch scripts/build-json.ts\" \"npx --yes http-server -p 8080 -c-1 -o /preview/\"",
     "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1",
     "gen:sprites": "tsx scripts/gen-pie-sprites.ts",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "gen:boxtype-membership": "tsx scripts/gen-boxtype-membership.ts"
   },
   "peerDependencies": {
     "maplibre-gl": ">=4"
