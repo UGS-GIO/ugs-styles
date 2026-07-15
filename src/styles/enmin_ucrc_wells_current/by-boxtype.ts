@@ -12,7 +12,10 @@
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
-import { UCRC_BOX_TYPE_CODES, UCRC_BOX_TYPE_COLORS, UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
+import type { UcrcBoxGroup } from '../../palettes/ucrc-boxtype';
+import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
+
+const GROUP_LABELS: Record<UcrcBoxGroup, string> = { CORE: 'Core', CUTTINGS: 'Cuttings', OTHER: 'Other' };
 
 export const spec = {
     itemId: 'enmin_ucrc_wells',
@@ -23,18 +26,18 @@ export const spec = {
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
     // Explicit legend — icon (pie-wedge) renders have no paint color for the viewer to derive a
     // legend from, so carry the wedge codes→colors here (the authoritative palette).
-    legend: UCRC_BOX_TYPE_CODES.map((c) => ({ label: c, color: UCRC_BOX_TYPE_COLORS[c] ?? '#BDBDBD' })),
+    legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g] })),
 } satisfies Binding & { render: string; sprite: string; legend: { label: string; color: string }[] };
 
-// icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
-const iconImage: ExpressionSpecification = [
-    'concat', `${UCRC_BOX_TYPE_NAMESPACE}-`, ['coalesce', ['get', 'box_type_codes'], ''],
-];
+const codes: ExpressionSpecification = ['coalesce', ['get', 'box_type_codes'], ''];
 
-// Draw CORE wells on top of every other box type: with icon-allow-overlap, a
-// higher symbol-sort-key paints last (on top). CORE-containing codes → 1, rest → 0.
+// icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
+const iconImage: ExpressionSpecification = ['concat', `${UCRC_BOX_TYPE_NAMESPACE}-`, codes];
+
+// Draw CORE wells on top of every other box type: with icon-allow-overlap, a higher
+// symbol-sort-key paints last (on top). A well is CORE if it carries any core token.
 const coreOnTop: ExpressionSpecification = [
-    'case', ['in', 'CORE', ['coalesce', ['get', 'box_type_codes'], '']], 1, 0,
+    'case', ['any', ...UCRC_CORE_CODES.map((t): ExpressionSpecification => ['in', t, codes])], 1, 0,
 ];
 
 const layers: StyleLayer[] = [
