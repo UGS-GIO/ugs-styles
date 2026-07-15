@@ -13,16 +13,9 @@ import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
 import type { UcrcBoxGroup } from '../../palettes/ucrc-boxtype';
-import { UCRC_CORE_CODES, UCRC_CUTTINGS_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE } from '../../palettes/ucrc-boxtype';
+import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE, groupValues } from '../../palettes/ucrc-boxtype';
 
 const GROUP_LABELS: Record<UcrcBoxGroup, string> = { CORE: 'Core', CUTTINGS: 'Cuttings', OTHER: 'Other' };
-// Specific box_type tokens each group rolls up. OTHER = [] → catch-all (any token
-// not in another group); the consumer fills it from the data's distinct values.
-const GROUP_VALUES: Record<UcrcBoxGroup, readonly string[]> = {
-    CORE: UCRC_CORE_CODES,
-    CUTTINGS: UCRC_CUTTINGS_CODES,
-    OTHER: [],
-};
 
 export const spec = {
     itemId: 'enmin_ucrc_wells',
@@ -32,11 +25,11 @@ export const spec = {
     title: 'UCRC wells by box type',
     field: 'box_type_codes',   // the attribute this render symbolizes (consumers wire filters to it)
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
-    // Explicit legend — the single source of truth for this render's symbology: each group's
-    // colour + the specific box_type tokens it rolls up (`values`). Consumers (viewer legend,
-    // filters) derive colour + grouping from here; nothing about it is hardcoded downstream.
-    legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: GROUP_VALUES[g] })),
-} satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: readonly string[] }[] };
+    // Explicit legend — the single source of truth for this render's symbology. Each entry is a
+    // group: base `color` (header/hue) + its ordered `values`, where every specific token carries
+    // its OWN shade of the group colour. Consumers derive colours + grouping from here verbatim.
+    legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: groupValues(g) })),
+} satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string }[] }[] };
 
 const codes: ExpressionSpecification = ['coalesce', ['get', 'box_type_codes'], ''];
 

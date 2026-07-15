@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 import { createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
-import { UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, boxTypeGroup, UCRC_BOX_TYPE_NAMESPACE } from '../src/palettes/ucrc-boxtype';
+import { UCRC_BOX_TYPE_ORDER, boxTypeColor, UCRC_BOX_TYPE_NAMESPACE } from '../src/palettes/ucrc-boxtype';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
@@ -40,30 +40,31 @@ function drawCombo(ctx: SKRSContext2D, ox: number, oy: number, combo: string, sc
     const size = SIZE * scale;
     const sw = STROKE_W * scale;
     const present = new Set(combo.split(',').map((s) => s.trim()).filter(Boolean));
-    // One wedge per distinct colour GROUP present (CORE/CUTTINGS/OTHER), in fixed order —
-    // the specific tokens roll up, so a mixed well shows a purple + green disc, not N slivers.
-    const groups = UCRC_BOX_GROUP_ORDER.filter((g) => [...present].some((t) => boxTypeGroup(t) === g));
-    if (groups.length === 0) return;  // empty combo → transparent cell
+    // One wedge per specific token, coloured with that token's shade of its group colour. Known
+    // tokens draw in the fixed group/shade order; any unknown token trails (default gray).
+    const known = UCRC_BOX_TYPE_ORDER.filter((t) => present.has(t));
+    const tokens = [...known, ...[...present].filter((t) => !UCRC_BOX_TYPE_ORDER.includes(t))];
+    if (tokens.length === 0) return;  // empty combo → transparent cell
 
     const cx = ox + size / 2, cy = oy + size / 2;
     const rFill = size / 2, rStroke = size / 2 - sw / 2;
-    const twoPi = Math.PI * 2, sweep = twoPi / groups.length;
+    const twoPi = Math.PI * 2, sweep = twoPi / tokens.length;
     let angle = Math.PI;  // start at 9 o'clock, sweep clockwise (viewer parity)
 
-    for (const group of groups) {
+    for (const token of tokens) {
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, rFill, angle, angle + sweep);
         ctx.closePath();
-        ctx.fillStyle = UCRC_BOX_GROUP_COLORS[group];
+        ctx.fillStyle = boxTypeColor(token);
         ctx.fill();
         angle += sweep;
     }
     ctx.strokeStyle = STROKE_COLOR;
     ctx.lineWidth = sw;
-    if (groups.length > 1) {  // wedge dividers
+    if (tokens.length > 1) {  // wedge dividers
         let a = Math.PI;
-        for (let i = 0; i < groups.length; i++) {
+        for (let i = 0; i < tokens.length; i++) {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(cx + Math.cos(a) * rStroke, cy + Math.sin(a) * rStroke);

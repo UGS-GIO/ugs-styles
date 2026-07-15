@@ -37,8 +37,9 @@ type ManifestEntry = {
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
     // Explicit legend: the render's symbology. `values` (grouped renders) = the specific field
-    // values an entry rolls up; `stroke` = optional swatch outline. Consumers derive colours here.
-    legend?: { label: string; color: string; values?: readonly string[]; stroke?: string }[];
+    // values an entry rolls up, each with its own shade; `stroke` = optional swatch outline (flat
+    // renders). Consumers derive colours from here verbatim.
+    legend?: { label: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
     field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
 };
 
