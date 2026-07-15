@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 import { createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
-import { UCRC_BOX_TYPE_CODES, UCRC_BOX_TYPE_COLORS, UCRC_BOX_TYPE_NAMESPACE } from '../src/palettes/ucrc-boxtype';
+import { UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, boxTypeGroup, UCRC_BOX_TYPE_NAMESPACE } from '../src/palettes/ucrc-boxtype';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
@@ -40,28 +40,30 @@ function drawCombo(ctx: SKRSContext2D, ox: number, oy: number, combo: string, sc
     const size = SIZE * scale;
     const sw = STROKE_W * scale;
     const present = new Set(combo.split(',').map((s) => s.trim()).filter(Boolean));
-    const codes = UCRC_BOX_TYPE_CODES.filter((c) => present.has(c));
-    if (codes.length === 0) return;  // no wedge → transparent cell (matches viewer)
+    // One wedge per distinct colour GROUP present (CORE/CUTTINGS/OTHER), in fixed order —
+    // the specific tokens roll up, so a mixed well shows a purple + green disc, not N slivers.
+    const groups = UCRC_BOX_GROUP_ORDER.filter((g) => [...present].some((t) => boxTypeGroup(t) === g));
+    if (groups.length === 0) return;  // empty combo → transparent cell
 
     const cx = ox + size / 2, cy = oy + size / 2;
     const rFill = size / 2, rStroke = size / 2 - sw / 2;
-    const twoPi = Math.PI * 2, sweep = twoPi / codes.length;
+    const twoPi = Math.PI * 2, sweep = twoPi / groups.length;
     let angle = Math.PI;  // start at 9 o'clock, sweep clockwise (viewer parity)
 
-    for (const code of codes) {
+    for (const group of groups) {
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, rFill, angle, angle + sweep);
         ctx.closePath();
-        ctx.fillStyle = UCRC_BOX_TYPE_COLORS[code] ?? '#BDBDBD';
+        ctx.fillStyle = UCRC_BOX_GROUP_COLORS[group];
         ctx.fill();
         angle += sweep;
     }
     ctx.strokeStyle = STROKE_COLOR;
     ctx.lineWidth = sw;
-    if (codes.length > 1) {  // wedge dividers
+    if (groups.length > 1) {  // wedge dividers
         let a = Math.PI;
-        for (let i = 0; i < codes.length; i++) {
+        for (let i = 0; i < groups.length; i++) {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(cx + Math.cos(a) * rStroke, cy + Math.sin(a) * rStroke);
