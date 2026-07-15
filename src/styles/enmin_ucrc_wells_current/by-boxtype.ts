@@ -30,12 +30,13 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'UCRC wells by box type',
+    field: 'box_type_codes',   // the attribute this render symbolizes (consumers wire filters to it)
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
     // Explicit legend — the single source of truth for this render's symbology: each group's
     // colour + the specific box_type tokens it rolls up (`values`). Consumers (viewer legend,
     // filters) derive colour + grouping from here; nothing about it is hardcoded downstream.
     legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: GROUP_VALUES[g] })),
-} satisfies Binding & { render: string; sprite: string; legend: { label: string; color: string; values: readonly string[] }[] };
+} satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: readonly string[] }[] };
 
 const codes: ExpressionSpecification = ['coalesce', ['get', 'box_type_codes'], ''];
 

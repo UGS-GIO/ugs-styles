@@ -14,6 +14,7 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'UCRC wells by purpose',
+    field: 'purpose',   // the attribute this render symbolizes (consumers wire filters to it)
     // Legend = the source of truth for this render's symbology (fill + stroke per purpose). Flat
     // (no `values`): each entry's label IS the field value. Consumers derive colours from here.
     legend: UCRC_PURPOSE_LABELS.map((p) => ({
@@ -21,7 +22,7 @@ export const spec = {
         color: UCRC_PURPOSE_FILL[p] ?? '#BDBDBD',
         stroke: UCRC_PURPOSE_STROKE[p] ?? '#858585',
     })),
-} satisfies Binding & { render: string; legend: { label: string; color: string; stroke: string }[] };
+} satisfies Binding & { render: string; field: string; legend: { label: string; color: string; stroke: string }[] };
 
 const layers: StyleLayer[] = [
     {
