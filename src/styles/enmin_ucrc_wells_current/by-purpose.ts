@@ -6,7 +6,7 @@
  */
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom, matchByField } from '../../expressions/categorical';
-import { UCRC_PURPOSE_FILL, UCRC_PURPOSE_STROKE } from '../../palettes/ucrc-purpose';
+import { UCRC_PURPOSE_FILL, UCRC_PURPOSE_STROKE, UCRC_PURPOSE_LABELS } from '../../palettes/ucrc-purpose';
 
 export const spec = {
     itemId: 'enmin_ucrc_wells',   // energy_mineral.enmin_ucrc_wells_current -> _current-stripped stem
@@ -14,7 +14,14 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'UCRC wells by purpose',
-} satisfies Binding & { render: string };
+    // Legend = the source of truth for this render's symbology (fill + stroke per purpose). Flat
+    // (no `values`): each entry's label IS the field value. Consumers derive colours from here.
+    legend: UCRC_PURPOSE_LABELS.map((p) => ({
+        label: p,
+        color: UCRC_PURPOSE_FILL[p] ?? '#BDBDBD',
+        stroke: UCRC_PURPOSE_STROKE[p] ?? '#858585',
+    })),
+} satisfies Binding & { render: string; legend: { label: string; color: string; stroke: string }[] };
 
 const layers: StyleLayer[] = [
     {
