@@ -36,7 +36,10 @@ type ManifestEntry = {
     assets: string[]; path: string; layer: string; title?: string;
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
-    legend?: { label: string; color: string }[];  // explicit legend for renders with no derivable paint
+    // Explicit legend: the render's symbology. `values` (grouped renders) = the specific field
+    // values an entry rolls up; `stroke` = optional swatch outline. Consumers derive colours here.
+    legend?: { label: string; color: string; values?: readonly string[]; stroke?: string }[];
+    field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
 };
 
 const main = async () => {
@@ -93,6 +96,7 @@ const main = async () => {
                 ...(spec.rescale ? { rescale: spec.rescale } : {}),
                 ...(spec.sprite ? { sprite: spec.sprite } : {}),
                 ...(spec.legend ? { legend: spec.legend } : {}),
+                ...(spec.field ? { field: spec.field } : {}),
             });
             console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }
