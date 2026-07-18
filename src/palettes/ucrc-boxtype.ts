@@ -1,25 +1,21 @@
 /**
  * UCRC well box-type palette — multi-value categorical, rendered as pie-wedge sprites.
  *
- * `box_type_codes` is a comma-delimited list of the SPECIFIC sample types on a well. Each type
- * belongs to one of three GROUPS (Core / Cuttings / Other), and gets its OWN SHADE of that group's
- * base colour — generated deterministically from the group's fixed token order (see shades.ts).
- * So Core is a family of purples, Cuttings a family of greens, Other a family of grays.
+ * Split of ownership:
+ *   - The UCRC management app owns the GROUPING (which specific type is Core/Cuttings/Other),
+ *     published on the served `ucrc_boxes` parquet and snapshotted into ucrc-boxtype.membership.ts.
+ *   - THIS file owns STYLE: the three group base colours + the shade algorithm + the order shades
+ *     are assigned (alphabetical within a group — stable + deterministic, no hand-maintained list).
  *
- * Grouping still drives draw order (Core on top) + the legend's group headers; the per-token shade
- * is what colours each wedge + legend swatch. Token order below is FIXED — do not reorder, it pins
- * each token's shade. The old bare `CORE` code never existed in the data.
+ * Each specific type gets its own shade of its group's base colour. `box_type_codes` on a well is a
+ * comma-delimited list of these codes; a well's pie disc is one wedge per specific type it holds.
  */
 import { shades } from './shades';
-
-// Fixed per-group token order — pins each token's shade. Do not reorder.
-export const UCRC_CORE_CODES = ['BUTTS', 'SLABS', 'WHOLE CORE', 'CORESAMPLES', 'SKELETONIZED CORE', 'SPOT CORES'] as const;
-export const UCRC_CUTTINGS_CODES = ['CUTTINGS', 'CORE CHIPS'] as const;
-export const UCRC_OTHER_CODES = ['OUTCROP SAMPLES', 'OTHER', 'SIDEWALL PLUGS', 'UNKNOWN', 'THIN SECTIONS'] as const;
+import { UCRC_BOX_MEMBERSHIP } from './ucrc-boxtype.membership';
 
 export type UcrcBoxGroup = 'CORE' | 'CUTTINGS' | 'OTHER';
 
-// Group base colours (the legend group header + the hue each group's shades are drawn from).
+// Group base colours (legend header + the hue each group's shades are drawn from) — ugs-styles owns these.
 export const UCRC_BOX_GROUP_COLORS: Record<UcrcBoxGroup, string> = {
     CORE: '#5E3C99',
     CUTTINGS: '#1A9641',
@@ -28,29 +24,34 @@ export const UCRC_BOX_GROUP_COLORS: Record<UcrcBoxGroup, string> = {
 
 export const UCRC_BOX_GROUP_ORDER = ['CORE', 'CUTTINGS', 'OTHER'] as const satisfies readonly UcrcBoxGroup[];
 
-const GROUP_CODES: Record<UcrcBoxGroup, readonly string[]> = {
-    CORE: UCRC_CORE_CODES,
-    CUTTINGS: UCRC_CUTTINGS_CODES,
-    OTHER: UCRC_OTHER_CODES,
+// Managed group codes are free text; normalize to our three known groups (anything else → OTHER).
+const normGroup = (g: string): UcrcBoxGroup => {
+    const u = g.toUpperCase();
+    return u === 'CORE' || u === 'CUTTINGS' ? u : 'OTHER';
 };
 
-/** Every known token, in group order — the wedge draw order for a well's pie. */
-export const UCRC_BOX_TYPE_ORDER: readonly string[] = UCRC_BOX_GROUP_ORDER.flatMap(g => [...GROUP_CODES[g]]);
+const GROUP_OF = new Map<string, UcrcBoxGroup>(UCRC_BOX_MEMBERSHIP.map(m => [m.code, normGroup(m.group)]));
 
-// token -> its shade of the group colour (built once, deterministic from the fixed order).
+// A group's codes, alphabetical — the stable shade order (ugs-styles owns ordering).
+const codesByGroup = (g: UcrcBoxGroup): string[] =>
+    UCRC_BOX_MEMBERSHIP.filter(m => normGroup(m.group) === g).map(m => m.code).sort((a, b) => a.localeCompare(b));
+
+/** Every known token, in group + shade order — the wedge draw order for a well's pie. */
+export const UCRC_BOX_TYPE_ORDER: readonly string[] = UCRC_BOX_GROUP_ORDER.flatMap(codesByGroup);
+
+/** Core codes — drives the "draw CORE on top" sort-key. Derived from managed membership. */
+export const UCRC_CORE_CODES: readonly string[] = codesByGroup('CORE');
+
+// token -> its shade of the group colour (deterministic from the alphabetical order).
 const TOKEN_COLOR = new Map<string, string>();
 for (const g of UCRC_BOX_GROUP_ORDER) {
-    const codes = GROUP_CODES[g];
+    const codes = codesByGroup(g);
     const cols = shades(UCRC_BOX_GROUP_COLORS[g], codes.length);
     codes.forEach((c, i) => TOKEN_COLOR.set(c, cols[i] ?? UCRC_BOX_GROUP_COLORS[g]));
 }
 
-const CORE_SET: ReadonlySet<string> = new Set(UCRC_CORE_CODES);
-const CUTTINGS_SET: ReadonlySet<string> = new Set(UCRC_CUTTINGS_CODES);
-
-/** Which colour group a specific box_type token rolls up into. */
-export const boxTypeGroup = (token: string): UcrcBoxGroup =>
-    CORE_SET.has(token) ? 'CORE' : CUTTINGS_SET.has(token) ? 'CUTTINGS' : 'OTHER';
+/** Which colour group a specific box_type token rolls up into (from managed membership). */
+export const boxTypeGroup = (token: string): UcrcBoxGroup => GROUP_OF.get(token) ?? 'OTHER';
 
 /** A specific token's shade of its group colour (falls back to the group base for unknowns). */
 export const boxTypeColor = (token: string): string =>
@@ -58,7 +59,7 @@ export const boxTypeColor = (token: string): string =>
 
 /** The ordered tokens (with shade) for a group — drives the legend's `values`. */
 export const groupValues = (g: UcrcBoxGroup): { value: string; color: string }[] =>
-    GROUP_CODES[g].map(v => ({ value: v, color: boxTypeColor(v) }));
+    codesByGroup(g).map(v => ({ value: v, color: boxTypeColor(v) }));
 
 // Sprite name prefix — must match the by-boxtype render's icon-image expression.
 export const UCRC_BOX_TYPE_NAMESPACE = 'box-type';
