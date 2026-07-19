@@ -43,6 +43,15 @@ function refsFromFilter(f: Json, out: Ref[]): void {
     rest.forEach((r) => refsFromFilter(r, out));
     return;
   }
+  // Numeric range comparisons. Class-break styles (displacement contours) are built ENTIRELY from these,
+  // so ignoring them meant their fields were never checked at all — which is exactly how a style filtering
+  // the non-existent `value_inch` passed validation and then rendered nothing. Field existence only: the
+  // literal is a range bound, not a value expected to appear verbatim in the data.
+  if (op === '<' || op === '<=' || op === '>' || op === '>=') {
+    const g = getField(rest[0]);
+    if (g) out.push({ field: g.field });
+    return;
+  }
   if (op === '==' || op === '!=') {
     const [lhs, val] = rest;
     const g = getField(lhs);
@@ -55,7 +64,7 @@ function refsFromFilter(f: Json, out: Ref[]): void {
 function getField(node: Json | undefined): { field: string; ci: boolean } | null {
   if (node == null || !isArray(node)) return null;
   if (node[0] === 'get' && typeof node[1] === 'string') return { field: node[1], ci: false };
-  if (node[0] === 'downcase' || node[0] === 'to-string') {
+  if (node[0] === 'downcase' || node[0] === 'to-string' || node[0] === 'to-number' || node[0] === 'coalesce') {
     const inner = getField(node[1]);
     return inner ? { field: inner.field, ci: node[0] === 'downcase' || inner.ci } : null;
   }
@@ -115,8 +124,12 @@ async function main() {
       rows = present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [];
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      console.log(`✗ ${itemId}: cannot read ${url} — ${msg.slice(0, 80)}`);
-      errors++; continue;
+      // Some layers (review-only hazards items) have no PUBLIC geoparquet, so CI genuinely cannot read
+      // their data. Failing here would block publishing every style for those layers, so this is an
+      // explicit UNVALIDATED warning rather than an error — the style ships, but nobody should read a
+      // green run as "fields checked". Point GEOPARQUET_BASE at a readable copy to actually validate.
+      console.log(`  ! ${itemId}: UNVALIDATED — cannot read ${url} — ${msg.slice(0, 60)}`);
+      warnings++; continue;
     }
 
     const distinct = new Map<string, Set<string>>();
