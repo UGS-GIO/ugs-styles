@@ -10,8 +10,13 @@
  * GetLegendGraphic DOES honour `style=`, returning only that style's rules — so it's the faithful source
  * for a named style. Rules carry the CQL filter + polygon symbolizer, which is all a GL fragment needs.
  *
+ * Attribute mapping: SLD rules reference GeoServer's column names, but these fragments style the
+ * warehouse's PMTiles, which don't always match (displacement: SLD `value_inch` vs tile `value_inches`).
+ * A filter naming a field the tile lacks evaluates to null, MapLibre errors per layer, and NOTHING draws
+ * — so pass `--map=<sldAttr>:<tileAttr>` (repeatable) to translate.
+ *
  * Usage:
- *   tsx scripts/legend-to-gl.ts <workspace:layer> <styleName> <itemId> <render>
+ *   tsx scripts/legend-to-gl.ts <workspace:layer> <styleName> <itemId> <render> [--map=a:b ...]
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -36,7 +41,7 @@ type GLExpr = unknown[];
  * Anything outside that shape throws rather than silently emitting a filter that matches the wrong
  * features — a wrong filter here becomes wrong colors AND wrong chart bins downstream.
  */
-export function cqlToGl(cql: string): GLExpr {
+export function cqlToGl(cql: string, attrMap: Record<string, string> = {}): GLExpr {
     const body = cql.trim().replace(/^\[/, '').replace(/\]$/, '').trim();
 
     const cmp = (chunk: string): GLExpr[] => {
@@ -46,7 +51,7 @@ export function cqlToGl(cql: string): GLExpr {
         while ((m = re.exec(chunk)) !== null) {
             const field = m[1]!, rawOp = m[2]!, rawVal = m[3]!;
             const op = rawOp === '=' ? '==' : rawOp === '<>' ? '!=' : rawOp;
-            out.push([op, ['get', field], Number(rawVal)]);
+            out.push([op, ['get', attrMap[field] ?? field], Number(rawVal)]);
         }
         return out;
     };
@@ -64,14 +69,14 @@ export function cqlToGl(cql: string): GLExpr {
     return ['all', ...clauses];
 }
 
-function layersFromRules(itemId: string, rules: LegendRule[]) {
+function layersFromRules(itemId: string, rules: LegendRule[], attrMap: Record<string, string>) {
     const layers: Record<string, unknown>[] = [];
     let n = 0;
     for (const rule of rules) {
         const poly = rule.symbolizers?.[0]?.Polygon;
         if (!poly) continue;
         // A rule with no filter applies to everything; keep it unfiltered rather than inventing one.
-        const filter = rule.filter ? cqlToGl(rule.filter) : undefined;
+        const filter = rule.filter ? cqlToGl(rule.filter, attrMap) : undefined;
 
         // Carry the SLD rule identity onto the layer. Consumers derive legend swatches + chart bins from
         // these fragments, and they need to know WHICH bin is the "within uncertainty" deadband. That is
@@ -116,7 +121,13 @@ function layersFromRules(itemId: string, rules: LegendRule[]) {
 }
 
 async function main() {
-    const [layerName, styleName, itemId, render] = process.argv.slice(2);
+    const argv = process.argv.slice(2);
+    const attrMap: Record<string, string> = {};
+    for (const a of argv.filter((x) => x.startsWith('--map='))) {
+        const [from, to] = a.slice('--map='.length).split(':');
+        if (from && to) attrMap[from] = to;
+    }
+    const [layerName, styleName, itemId, render] = argv.filter((x) => !x.startsWith('--'));
     if (!layerName || !styleName || !itemId || !render) {
         console.error('usage: tsx scripts/legend-to-gl.ts <workspace:layer> <styleName> <itemId> <render>');
         process.exit(1);
@@ -131,7 +142,7 @@ async function main() {
     const rules: LegendRule[] = json?.Legend?.[0]?.rules ?? [];
     if (rules.length === 0) throw new Error(`no rules for style '${styleName}'`);
 
-    const layers = layersFromRules(itemId, rules);
+    const layers = layersFromRules(itemId, rules, attrMap);
     const outDir = resolve(ROOT, 'src', 'styles', itemId);
     await mkdir(outDir, { recursive: true });
 

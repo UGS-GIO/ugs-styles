@@ -32,7 +32,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.5
             ],
@@ -44,7 +44,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -52,7 +52,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -78,7 +78,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.5
             ],
@@ -90,7 +90,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -98,7 +98,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -124,7 +124,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.5
             ],
@@ -132,7 +132,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.2
             ],
@@ -144,7 +144,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -152,7 +152,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -178,7 +178,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.5
             ],
@@ -186,7 +186,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.2
             ],
@@ -198,7 +198,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -206,7 +206,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -232,7 +232,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.2
             ],
@@ -240,7 +240,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.9
             ],
@@ -252,7 +252,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -260,7 +260,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -286,7 +286,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -1.2
             ],
@@ -294,7 +294,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.9
             ],
@@ -306,7 +306,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -314,7 +314,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -340,7 +340,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.9
             ],
@@ -348,7 +348,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.6
             ],
@@ -360,7 +360,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -368,7 +368,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -394,7 +394,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.9
             ],
@@ -402,7 +402,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.6
             ],
@@ -414,7 +414,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -422,7 +422,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -448,7 +448,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.6
             ],
@@ -456,7 +456,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.45
             ],
@@ -468,7 +468,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -476,7 +476,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -502,7 +502,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.6
             ],
@@ -510,7 +510,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.45
             ],
@@ -522,7 +522,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -530,7 +530,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -556,7 +556,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.45
             ],
@@ -564,7 +564,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.3
             ],
@@ -576,7 +576,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -584,7 +584,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -610,7 +610,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.45
             ],
@@ -618,7 +618,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.3
             ],
@@ -630,7 +630,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -638,7 +638,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -664,7 +664,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.3
             ],
@@ -672,7 +672,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.15
             ],
@@ -684,7 +684,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -692,7 +692,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -718,7 +718,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.3
             ],
@@ -726,7 +726,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.15
             ],
@@ -738,7 +738,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -746,7 +746,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -772,7 +772,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.15
             ],
@@ -780,7 +780,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.075
             ],
@@ -792,7 +792,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -800,7 +800,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -826,7 +826,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.15
             ],
@@ -834,7 +834,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.075
             ],
@@ -846,7 +846,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -854,7 +854,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -880,7 +880,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.075
             ],
@@ -888,7 +888,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.075
             ],
@@ -900,7 +900,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -908,7 +908,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -934,7 +934,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.075
             ],
@@ -942,7 +942,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.075
             ],
@@ -954,7 +954,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -962,7 +962,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -988,7 +988,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.075
             ],
@@ -996,7 +996,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.15
             ],
@@ -1008,7 +1008,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1016,7 +1016,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1042,7 +1042,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.075
             ],
@@ -1050,7 +1050,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.15
             ],
@@ -1062,7 +1062,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1070,7 +1070,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1096,7 +1096,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.15
             ],
@@ -1104,7 +1104,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.3
             ],
@@ -1116,7 +1116,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1124,7 +1124,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1150,7 +1150,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.15
             ],
@@ -1158,7 +1158,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.3
             ],
@@ -1170,7 +1170,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1178,7 +1178,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1204,7 +1204,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.3
             ],
@@ -1212,7 +1212,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.45
             ],
@@ -1224,7 +1224,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1232,7 +1232,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1258,7 +1258,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.3
             ],
@@ -1266,7 +1266,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.45
             ],
@@ -1278,7 +1278,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1286,7 +1286,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1312,7 +1312,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.45
             ],
@@ -1320,7 +1320,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.6
             ],
@@ -1332,7 +1332,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1340,7 +1340,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1366,7 +1366,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.45
             ],
@@ -1374,7 +1374,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.6
             ],
@@ -1386,7 +1386,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1394,7 +1394,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1420,7 +1420,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.6
             ],
@@ -1428,7 +1428,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.9
             ],
@@ -1440,7 +1440,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1448,7 +1448,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1474,7 +1474,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.6
             ],
@@ -1482,7 +1482,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.9
             ],
@@ -1494,7 +1494,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1502,7 +1502,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1528,7 +1528,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.9
             ],
@@ -1536,7 +1536,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.2
             ],
@@ -1548,7 +1548,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1556,7 +1556,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1582,7 +1582,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.9
             ],
@@ -1590,7 +1590,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.2
             ],
@@ -1602,7 +1602,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1610,7 +1610,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1636,7 +1636,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.2
             ],
@@ -1644,7 +1644,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.5
             ],
@@ -1656,7 +1656,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1664,7 +1664,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1690,7 +1690,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.2
             ],
@@ -1698,7 +1698,7 @@ const layers: StyleLayer[] = [
                 "<",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.5
             ],
@@ -1710,7 +1710,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1718,7 +1718,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1744,7 +1744,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.5
             ],
@@ -1756,7 +1756,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1764,7 +1764,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1790,7 +1790,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 1.5
             ],
@@ -1802,7 +1802,7 @@ const layers: StyleLayer[] = [
                         ">=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         -0.001
                     ],
@@ -1810,7 +1810,7 @@ const layers: StyleLayer[] = [
                         "<=",
                         [
                             "get",
-                            "value_inch"
+                            "value_inches"
                         ],
                         0.001
                     ]
@@ -1836,7 +1836,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.001
             ],
@@ -1844,7 +1844,7 @@ const layers: StyleLayer[] = [
                 "<=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.001
             ]
@@ -1868,7 +1868,7 @@ const layers: StyleLayer[] = [
                 ">=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 -0.001
             ],
@@ -1876,7 +1876,7 @@ const layers: StyleLayer[] = [
                 "<=",
                 [
                     "get",
-                    "value_inch"
+                    "value_inches"
                 ],
                 0.001
             ]
