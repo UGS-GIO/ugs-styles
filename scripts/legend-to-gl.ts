@@ -25,11 +25,13 @@ const ROOT = process.cwd();
 const GEOSERVER = (process.env.GEOSERVER_BASE
     ?? 'https://ugs-geoserver-prod-flbcoqv7oa-uc.a.run.app/geoserver').replace(/\/$/, '');
 
+type Symbolizer = Record<string, string>;
+
 interface LegendRule {
     name?: string;
     title?: string;
     filter?: string;
-    symbolizers?: Array<{ Polygon?: Record<string, string> }>;
+    symbolizers?: Array<{ Polygon?: Symbolizer; Line?: Symbolizer; Point?: Symbolizer }>;
 }
 
 type GLExpr = unknown[];
@@ -46,12 +48,16 @@ export function cqlToGl(cql: string, attrMap: Record<string, string> = {}): GLEx
 
     const cmp = (chunk: string): GLExpr[] => {
         const out: GLExpr[] = [];
-        const re = /([A-Za-z_]\w*)\s*(>=|<=|<>|!=|=|>|<)\s*'?(-?\d+(?:\.\d+)?)'?/g;
+        // `field <op> 'literal'` or `field <op> literal`. Quoted numerics stay numeric (class breaks write
+        // them as '-12'); genuinely non-numeric literals stay strings (categorical rules).
+        const re = /([A-Za-z_]\w*)\s*(>=|<=|<>|!=|=|>|<)\s*(?:'([^']*)'|(-?\d+(?:\.\d+)?))/g;
         let m: RegExpExecArray | null;
         while ((m = re.exec(chunk)) !== null) {
-            const field = m[1]!, rawOp = m[2]!, rawVal = m[3]!;
+            const field = m[1]!, rawOp = m[2]!;
+            const raw = m[3] ?? m[4]!;
             const op = rawOp === '=' ? '==' : rawOp === '<>' ? '!=' : rawOp;
-            out.push([op, ['get', attrMap[field] ?? field], Number(rawVal)]);
+            const isNum = raw.trim() !== '' && Number.isFinite(Number(raw));
+            out.push([op, ['get', attrMap[field] ?? field], isNum ? Number(raw) : raw]);
         }
         return out;
     };
@@ -72,49 +78,63 @@ export function cqlToGl(cql: string, attrMap: Record<string, string> = {}): GLEx
 function layersFromRules(itemId: string, rules: LegendRule[], attrMap: Record<string, string>) {
     const layers: Record<string, unknown>[] = [];
     let n = 0;
+    const opacity = (s: Symbolizer, key: string) =>
+        s[key] != null && Number(s[key]) !== 1 ? { [key]: Number(s[key]) } : {};
+
     for (const rule of rules) {
-        const poly = rule.symbolizers?.[0]?.Polygon;
-        if (!poly) continue;
-        // A rule with no filter applies to everything; keep it unfiltered rather than inventing one.
+        const sym = rule.symbolizers?.[0];
+        const poly = sym?.Polygon, line = sym?.Line, point = sym?.Point;
+        if (!poly && !line && !point) continue;
+
+        // Unfiltered rule applies to everything; don't invent a filter.
         const filter = rule.filter ? cqlToGl(rule.filter, attrMap) : undefined;
 
-        // Carry the SLD rule identity onto the layer. Consumers derive legend swatches + chart bins from
-        // these fragments, and they need to know WHICH bin is the "within uncertainty" deadband. That is
-        // not inferable from the bounds: velocity's deadband is the rule named `Zero` ([-0.001, 0.001]),
-        // while its class_9 ([-0.075, 0.075]) also spans zero but is real data. Guessing picks the wrong
-        // one. The title is authoritative too (units differ per style, e.g. "in/period").
+        // ugs:zero marks the "within uncertainty" deadband. Not inferable from bounds — velocity's
+        // deadband is the rule named `Zero` ([-0.001,0.001]) while class_9 ([-0.075,0.075]) also spans
+        // zero but is real data.
         const metadata = {
             'ugs:rule': rule.name ?? `rule_${n}`,
             'ugs:title': rule.title ?? '',
             'ugs:zero': (rule.name ?? '').toLowerCase() === 'zero',
         };
-
-        const fill: Record<string, unknown> = {
-            id: `${itemId}-${n++}`,
-            type: 'fill',
-            metadata,
-            paint: {
-                'fill-color': (poly.fill ?? '#AAAAAA').toLowerCase(),
-                ...(poly['fill-opacity'] != null && Number(poly['fill-opacity']) !== 1
-                    ? { 'fill-opacity': Number(poly['fill-opacity']) }
-                    : {}),
-            },
+        const push = (type: string, paint: Record<string, unknown>, layout?: Record<string, unknown>) => {
+            const l: Record<string, unknown> = { id: `${itemId}-${n++}`, type, metadata, paint };
+            if (layout && Object.keys(layout).length) l.layout = layout;
+            if (filter) l.filter = filter;
+            layers.push(l);
         };
-        if (filter) fill.filter = filter;
-        layers.push(fill);
 
-        if (poly.stroke) {
-            const line: Record<string, unknown> = {
-                id: `${itemId}-${n++}`,
-                type: 'line',
-                metadata,
-                paint: {
+        if (poly) {
+            push('fill', {
+                'fill-color': (poly.fill ?? '#AAAAAA').toLowerCase(),
+                ...opacity(poly, 'fill-opacity'),
+            });
+            if (poly.stroke) {
+                push('line', {
                     'line-color': poly.stroke.toLowerCase(),
                     'line-width': Number(poly['stroke-width'] ?? 0.3),
-                },
-            };
-            if (filter) line.filter = filter;
-            layers.push(line);
+                    ...opacity(poly, 'stroke-opacity'),
+                });
+            }
+        }
+        if (line?.stroke) {
+            // line-cap / line-join are layout properties, not paint.
+            push('line', {
+                'line-color': line.stroke.toLowerCase(),
+                'line-width': Number(line['stroke-width'] ?? 1),
+                ...opacity(line, 'stroke-opacity'),
+            }, {
+                ...(line['stroke-linecap'] ? { 'line-cap': line['stroke-linecap'] } : {}),
+                ...(line['stroke-linejoin'] ? { 'line-join': line['stroke-linejoin'] } : {}),
+            });
+        }
+        if (point) {
+            push('circle', {
+                'circle-color': (point.fill ?? '#AAAAAA').toLowerCase(),
+                'circle-radius': Number(point.size ?? 4) / 2,
+                ...(point.stroke ? { 'circle-stroke-color': point.stroke.toLowerCase() } : {}),
+                ...(point['stroke-width'] ? { 'circle-stroke-width': Number(point['stroke-width']) } : {}),
+            });
         }
     }
     return layers;
@@ -143,6 +163,10 @@ async function main() {
     if (rules.length === 0) throw new Error(`no rules for style '${styleName}'`);
 
     const layers = layersFromRules(itemId, rules, attrMap);
+    // A style that draws nothing is worse than no style — fail loudly instead of writing it.
+    if (layers.length === 0) {
+        throw new Error(`'${styleName}': ${rules.length} rule(s) produced 0 layers — unsupported symbolizer?`);
+    }
     const outDir = resolve(ROOT, 'src', 'styles', itemId);
     await mkdir(outDir, { recursive: true });
 
