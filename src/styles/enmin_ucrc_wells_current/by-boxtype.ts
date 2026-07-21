@@ -13,7 +13,7 @@ import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
 import type { UcrcBoxGroup } from '../../palettes/ucrc-boxtype';
-import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE, groupValues } from '../../palettes/ucrc-boxtype';
+import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES, groupValues } from '../../palettes/ucrc-boxtype';
 
 const GROUP_LABELS: Record<UcrcBoxGroup, string> = { CORE: 'Core', CUTTINGS: 'Cuttings', OTHER: 'Other' };
 
@@ -31,7 +31,14 @@ export const spec = {
     legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: groupValues(g) })),
 } satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string }[] }[] };
 
-const codes: ExpressionSpecification = ['coalesce', ['get', 'box_type_codes'], ''];
+// A code-less well still has to draw: blank/missing codes resolve to the stand-in no-codes disc
+// rather than to `box-type-` (no such sprite → invisible well). Distinct from the managed
+// 'UNKNOWN' code, which means something else — see UCRC_BOX_NO_CODES.
+const codes: ExpressionSpecification = [
+    'case',
+    ['==', ['coalesce', ['get', 'box_type_codes'], ''], ''], UCRC_BOX_NO_CODES,
+    ['to-string', ['get', 'box_type_codes']],
+];
 
 // icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
 const iconImage: ExpressionSpecification = ['concat', `${UCRC_BOX_TYPE_NAMESPACE}-`, codes];
@@ -48,7 +55,9 @@ const layers: StyleLayer[] = [
         type: 'symbol',
         layout: {
             'icon-image': iconImage,
-            'icon-size': interpolateByZoom([[4, 0.1], [7, 0.2], [10, 0.3], [13, 0.4], [16, 0.5]]),
+            // Sized to match the by-purpose circles: the sprite disc is 40px @1x, so
+            // icon-size = (2 × that render's circle-radius) / 40 at each stop.
+            'icon-size': interpolateByZoom([[4, 0.15], [7, 0.275], [10, 0.4], [13, 0.55], [16, 0.7]]),
             'icon-allow-overlap': true,
             'symbol-sort-key': coreOnTop,
         },

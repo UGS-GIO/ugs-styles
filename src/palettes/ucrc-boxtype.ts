@@ -63,3 +63,16 @@ export const groupValues = (g: UcrcBoxGroup): { value: string; color: string }[]
 
 // Sprite name prefix — must match the by-boxtype render's icon-image expression.
 export const UCRC_BOX_TYPE_NAMESPACE = 'box-type';
+
+/**
+ * Stand-in token for a well with NO `box_type_codes` at all. It exists so a code-less well
+ * resolves to a real sprite (a plain OTHER-grey disc) instead of asking for `box-type-` and
+ * drawing nothing. The sprite generator always bakes it; the by-boxtype render substitutes it for
+ * blank/missing codes.
+ *
+ * Deliberately not 'UNKNOWN': that IS a managed code in the live data (both alone and inside
+ * combos), and it means "this well's holdings are of an unknown type" — a different fact from
+ * "this well has no holdings recorded". The double underscores keep the sentinel out of the
+ * managed namespace for good.
+ */
+export const UCRC_BOX_NO_CODES = '__NONE__';

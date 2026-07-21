@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 import { createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
-import { UCRC_BOX_TYPE_ORDER, boxTypeColor, UCRC_BOX_TYPE_NAMESPACE } from '../src/palettes/ucrc-boxtype';
+import { UCRC_BOX_TYPE_ORDER, boxTypeColor, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES } from '../src/palettes/ucrc-boxtype';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
@@ -103,6 +103,9 @@ async function distinctCombos(): Promise<string[]> {
         const v = r[FIELD];
         if (typeof v === 'string' && v.trim()) set.add(v.trim());
     }
+    // Always bake the stand-in disc, even when the current extract has no code-less wells —
+    // the render points blank/missing codes at it, and a missing sprite draws nothing.
+    set.add(UCRC_BOX_NO_CODES);
     return [...set].sort();
 }
 
