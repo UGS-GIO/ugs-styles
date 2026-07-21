@@ -13,6 +13,6 @@ export const spec = {
     assets: ['pmtiles'],
     archetype: 'point',
     field: 'purpose',
-    palette: 'ucrc-purpose',
+    palette: 'wells-purpose',
     title: 'Wells by purpose',
 } satisfies StyleSpec;

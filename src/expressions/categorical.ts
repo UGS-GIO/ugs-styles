@@ -13,9 +13,20 @@ export const matchByField = (
     field: string,
     matches: Record<string, string>,
     defaultValue: string,
+): ExpressionSpecification => matchByValue(['coalesce', ['get', field], ''], matches, defaultValue);
+
+/**
+ * As `matchByField`, but keyed on an arbitrary expression instead of a raw
+ * property — for when the lookup key is derived (normalized case, blank folded
+ * to an explicit category, two columns coalesced) rather than stored.
+ */
+export const matchByValue = (
+    value: ExpressionSpecification,
+    matches: Record<string, string>,
+    defaultValue: string,
 ): ExpressionSpecification => [
     'coalesce',
-    ['get', ['coalesce', ['get', field], ''], ['literal', matches]],
+    ['get', value, ['literal', matches]],
     defaultValue,
 ];
 
