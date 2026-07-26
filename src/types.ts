@@ -27,9 +27,13 @@ export type Geom = 'fill' | 'line' | 'circle';
 // default-export StyleLayer[] instead (the escape hatch). See DESIGN.md.
 export type StyleSpec = Binding & {
     render: string;                  // render id (default | by-purpose | …); unique per item
-    archetype: 'simple' | 'categorical' | 'point';
-    field?: string;                  // attribute keyed on (categorical / point-by-field)
-    palette?: string;                // named palette (see palettes/index.ts)
+    archetype: 'simple' | 'categorical' | 'point' | 'graduated';
+    field?: string;                  // attribute keyed on (categorical / graduated / point-by-field)
+    palette?: string;                // named palette or ramp (see palettes/index.ts)
     geom?: Geom;                     // categorical/simple geometry (default 'fill')
     color?: string;                  // simple/point single color (when no palette)
+    // graduated-only — the numeric domain, one entry per ramp stop (see archetypes/index.ts):
+    values?: number[];               // discrete field values, matched with `==`
+    breaks?: number[];               // ascending lower bounds of half-open bins, `>=` / `<`
+    opacity?: number;                // fill opacity (default 0.7)
 };
