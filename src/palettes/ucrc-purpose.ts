@@ -6,7 +6,7 @@
  * Two vocabularies share this domain: the current UCRC inventory
  * (`enmin_ucrc_wells`, which says 'Metals' / 'Geotechnical') and the older
  * `wells_spatial` copy of the same wells (which says 'Mining' / 'Building or
- * Construction'). Both are keyed here — a renamed category keeps its colour, so
+ * Construction'). Both are keyed here — a renamed category keeps its color, so
  * the same well looks the same on either layer. `UCRC_WELLS_PURPOSE_LABELS` is
  * the subset a render should put in its legend for the current inventory.
  */

@@ -5,7 +5,7 @@
  *
  * The seeded SLD filtered on `label == 'paradox basin'`, but the live data spells it
  * "Complete Paradox Basin" — so Paradox matched nothing, drew the grey fallback, and labelled
- * itself "Complete Paradox Basin". Colour + text now come from BASIN_LABELS, keyed on the real
+ * itself "Complete Paradox Basin". Color + text now come from BASIN_LABELS, keyed on the real
  * stored values, so the map reads "Paradox Basin" in the right purple.
  */
 import type { ExpressionSpecification } from 'maplibre-gl';

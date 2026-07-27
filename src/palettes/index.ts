@@ -92,7 +92,7 @@ const GEOLUNITS_FILL: Record<string, string> = {
 
 export const PALETTES: Record<string, Palette> = {
     'ucrc-purpose': { fill: UCRC_PURPOSE_FILL, stroke: UCRC_PURPOSE_STROKE, other: '#BDBDBD' },
-    // Same colours, scoped to the older wells_spatial vocabulary — see ucrc-purpose.ts.
+    // Same colors, scoped to the older wells_spatial vocabulary — see ucrc-purpose.ts.
     'wells-purpose': { ...pickPurpose(WELLS_SPATIAL_PURPOSE_LABELS), other: '#BDBDBD' },
     'qfaults': { fill: QFAULTS_FILL, other: '#999999' },
     'pipelines': { fill: PIPELINES_FILL, other: '#888888' },

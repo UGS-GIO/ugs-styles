@@ -1,8 +1,9 @@
 /**
  * UCRC wells — symbolized by `box_type_codes` (pie-wedge icons). Ported from the authoritative
  * ugs-map-viewer subsurface layer: each well's icon is a disc split into colored wedges for the
- * box types it holds (BUTTS/CORE/CUTTINGS/SLABS). `box_type_codes` is multi-value, so it can't be
- * a single fill — the icons (pre-baked into a sprite sheet by scripts/gen-pie-sprites.ts) carry
+ * box-type GROUPS it holds — Core / Cuttings / Other, three colors, so a disc is at most 3 slices
+ * no matter how many specific types the well carries. `box_type_codes` is multi-value, so it can't
+ * be a single fill — the icons (pre-baked into a sprite sheet by scripts/gen-pie-sprites.ts) carry
  * the composite. icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
  *
  * The `sprite` field tells consumers which sprite sheet to load (the base map style's own sprite
@@ -26,8 +27,9 @@ export const spec = {
     field: 'box_type_codes',   // the attribute this render symbolizes (consumers wire filters to it)
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
     // Explicit legend — the single source of truth for this render's symbology. Each entry is a
-    // group: base `color` (header/hue) + its ordered `values`, where every specific token carries
-    // its OWN shade of the group colour. Consumers derive colours + grouping from here verbatim.
+    // group: its `color` + the ordered `values` that roll up into it. Every value carries the SAME
+    // color as its group (three swatches total); the `values` list is there to name what's in each
+    // group, so consumers should draw one swatch per group, not one per value.
     legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: groupValues(g) })),
 } satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string; label: string }[] }[] };
 
