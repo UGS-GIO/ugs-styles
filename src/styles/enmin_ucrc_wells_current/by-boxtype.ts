@@ -29,7 +29,7 @@ export const spec = {
     // group: base `color` (header/hue) + its ordered `values`, where every specific token carries
     // its OWN shade of the group colour. Consumers derive colours + grouping from here verbatim.
     legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: groupValues(g) })),
-} satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string }[] }[] };
+} satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string; label: string }[] }[] };
 
 // A code-less well still has to draw: blank/missing codes resolve to the stand-in no-codes disc
 // rather than to `box-type-` (no such sprite → invisible well). Distinct from the managed

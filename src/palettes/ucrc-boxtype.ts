@@ -24,6 +24,20 @@ export const UCRC_BOX_GROUP_COLORS: Record<UcrcBoxGroup, string> = {
 
 export const UCRC_BOX_GROUP_ORDER = ['CORE', 'CUTTINGS', 'OTHER'] as const satisfies readonly UcrcBoxGroup[];
 
+// Display label per code — the managed codes are shouty-case free text (e.g. 'CORE CHIPS',
+// 'CORESAMPLES'), not fit for a legend. Generic title-case handles most; a few codes are missing
+// a word boundary the source system never had ('CORESAMPLES' has no space) and need an explicit
+// override rather than mangling into 'Coresamples'.
+const DISPLAY_LABEL_OVERRIDES: Record<string, string> = {
+    CORESAMPLES: 'Core Samples',
+};
+
+const titleCase = (s: string): string =>
+    s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** Human-readable legend text for a managed code — display only, never the filter `value`. */
+export const boxTypeLabel = (token: string): string => DISPLAY_LABEL_OVERRIDES[token] ?? titleCase(token);
+
 // Managed group codes are free text; normalize to our three known groups (anything else → OTHER).
 const normGroup = (g: string): UcrcBoxGroup => {
     const u = g.toUpperCase();
@@ -57,9 +71,10 @@ export const boxTypeGroup = (token: string): UcrcBoxGroup => GROUP_OF.get(token)
 export const boxTypeColor = (token: string): string =>
     TOKEN_COLOR.get(token) ?? UCRC_BOX_GROUP_COLORS[boxTypeGroup(token)];
 
-/** The ordered tokens (with shade) for a group — drives the legend's `values`. */
-export const groupValues = (g: UcrcBoxGroup): { value: string; color: string }[] =>
-    codesByGroup(g).map(v => ({ value: v, color: boxTypeColor(v) }));
+/** The ordered tokens (with shade + display label) for a group — drives the legend's `values`.
+ *  `value` stays the raw managed code (filter/data join key); `label` is display-only. */
+export const groupValues = (g: UcrcBoxGroup): { value: string; color: string; label: string }[] =>
+    codesByGroup(g).map(v => ({ value: v, color: boxTypeColor(v), label: boxTypeLabel(v) }));
 
 // Sprite name prefix — must match the by-boxtype render's icon-image expression.
 export const UCRC_BOX_TYPE_NAMESPACE = 'box-type';
