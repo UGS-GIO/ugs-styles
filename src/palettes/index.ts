@@ -4,14 +4,21 @@
  *
  * A palette is `{ fill, stroke?, other? }` where fill/stroke map a data value -> color
  * (categorical), and `other` is the fallback for unmapped values.
+ *
+ * A ramp is an ordered `string[]` — sequential stops, low -> high — referenced the same way by
+ * `spec.palette` from the `graduated` archetype (DESIGN.md §4). Two registries, one namespace:
+ * an archetype looks in the one it needs, so a spec never says which kind it means.
  */
 import { UCRC_PURPOSE_FILL, UCRC_PURPOSE_STROKE, WELLS_SPATIAL_PURPOSE_LABELS, pickPurpose } from './ucrc-purpose';
+import { PFDF_DSI, PFDF_LIKELIHOOD } from './pfdf';
 
 export type Palette = {
     fill: Record<string, string>;
     stroke?: Record<string, string>;
     other?: string;
 };
+
+export type Ramp = readonly string[];
 
 // Hazards - Quaternary Faults palette
 const QFAULTS_FILL: Record<string, string> = {
@@ -103,4 +110,10 @@ export const PALETTES: Record<string, Palette> = {
     'transmission': { fill: TRANSMISSION_FILL, other: '#888888' },
     'basins': { fill: BASINS_FILL, other: '#D3D3D3' },
     'geolunits': { fill: GEOLUNITS_FILL, other: '#E5D8BD' },
+};
+
+// Sequential ramps for `graduated` — ordered low -> high, one stop per class.
+export const RAMPS: Record<string, Ramp> = {
+    'pfdf-dsi': PFDF_DSI,
+    'pfdf-likelihood': PFDF_LIKELIHOOD,
 };
