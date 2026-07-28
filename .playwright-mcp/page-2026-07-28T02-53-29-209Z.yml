@@ -1,0 +1,83 @@
+- generic [active] [ref=f2e1]:
+  - link "Skip to main content" [ref=f2e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=f2e3]:
+    - generic [ref=f2e4]:
+      - text: An official website of the state of Utah.
+      - button "Here is how you know" [ref=f2e5] [cursor=pointer]
+    - dialog [ref=f2e9]:
+      - generic [ref=f2e10]:
+        - generic [ref=f2e11]:
+          - generic [ref=f2e12]: 
+          - generic [ref=f2e13]:
+            - strong [ref=f2e14]: Official Utah websites use utah.gov in the browser's address bar.
+            - text: A Utah.gov website belongs to an official government organization in the state of Utah.
+        - generic [ref=f2e16]:
+          - generic [ref=f2e17]: 
+          - generic [ref=f2e18]:
+            - strong [ref=f2e19]: Be careful when sharing sensitive information.
+            - text: Share sensitive information only on secure official Utah.gov websites.
+        - generic [ref=f2e20]: An official website of the state of Utah © state of Utah
+  - banner "Utah.gov Header" [ref=f2e29]:
+    - link "Utah Geological Survey" [ref=f2e31] [cursor=pointer]:
+      - /url: https://geology.utah.gov
+  - generic [ref=f2e35]:
+    - banner [ref=f2e36]:
+      - link [ref=f2e37] [cursor=pointer]:
+        - /url: /
+        - strong [ref=f2e38]: UGS Warehouse
+      - generic [ref=f2e39]:
+        - text: STAC catalog ·
+        - link "maps-assets.geology.utah.gov/warehouse/stac/catalog.json" [ref=f2e40] [cursor=pointer]:
+          - /url: https://maps-assets.geology.utah.gov/warehouse/stac/catalog.json
+      - generic "viewer build — last updated 2026-07-27 (73ca3fa-dirty)" [ref=f2e41]: updated 2026-07-27 · 73ca3fa-dirty
+      - generic [ref=f2e42]:
+        - generic [ref=f2e43] [cursor=pointer]: Catalog
+        - generic [ref=f2e44] [cursor=pointer]: Map
+        - generic [ref=f2e45] [cursor=pointer]: Search
+        - generic [ref=f2e46] [cursor=pointer]: Architecture
+        - generic [ref=f2e47] [cursor=pointer]: Guide
+        - button "Toggle theme" [ref=f2e48]: ☾
+    - emphasis [ref=f2e50]: Loading…
+  - generic [ref=f2e51]:
+    - generic [ref=f2e52]:
+      - separator [ref=f2e65]
+      - generic [ref=f2e66]:
+        - generic [ref=f2e67]: An official website of the state of Utah
+        - generic [ref=f2e68]: © state of Utah
+    - list [ref=f2e70]:
+      - listitem [ref=f2e71]:
+        - link "Utah.gov Home , opens in a new tab" [ref=f2e72] [cursor=pointer]:
+          - /url: https://www.utah.gov/index.html
+          - text: Utah.gov Home
+          - generic [ref=f2e73]:
+            - generic [ref=f2e74]: ", opens in a new tab"
+            - generic [ref=f2e75]: 
+      - listitem [ref=f2e76]:
+        - link "Terms of Use , opens in a new tab" [ref=f2e77] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/disclaimer.html
+          - text: Terms of Use
+          - generic [ref=f2e78]:
+            - generic [ref=f2e79]: ", opens in a new tab"
+            - generic [ref=f2e80]: 
+      - listitem [ref=f2e81]:
+        - link "Privacy Policy , opens in a new tab" [ref=f2e82] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/privacypolicy.html
+          - text: Privacy Policy
+          - generic [ref=f2e83]:
+            - generic [ref=f2e84]: ", opens in a new tab"
+            - generic [ref=f2e85]: 
+      - listitem [ref=f2e86]:
+        - link "Accessibility , opens in a new tab" [ref=f2e87] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/accessibility.html
+          - text: Accessibility
+          - generic [ref=f2e88]:
+            - generic [ref=f2e89]: ", opens in a new tab"
+            - generic [ref=f2e90]: 
+      - listitem [ref=f2e91]:
+        - link "Translate , opens in a new tab" [ref=f2e92] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/translate.html
+          - text: Translate
+          - generic [ref=f2e93]:
+            - generic [ref=f2e94]: ", opens in a new tab"
+            - generic [ref=f2e95]: 
