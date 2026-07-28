@@ -7,12 +7,14 @@
  * stay in ucrc-boxtype.ts — this only refreshes membership.
  *
  * Usage: npm run gen:boxtype-membership   (run after the boxes export publishes the new columns)
+ *        npm run gen:boxtype-membership -- --force   (write even if the sanity check fails)
  */
 import { writeFile } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
+import { UCRC_BOX_GROUP_ORDER } from '../src/palettes/ucrc-boxtype';
 
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
     ?? 'https://maps-assets.geology.utah.gov/warehouse').replace(/\/+$/, '');
@@ -29,6 +31,28 @@ async function main(): Promise<void> {
         const group = typeof r.box_type_group === 'string' ? r.box_type_group.trim() : '';
         if (code && !seen.has(code)) seen.set(code, group || 'OTHER');
     }
+    // Sanity check the export before overwriting a good snapshot with a bad one.
+    //
+    // `box_type_group` is `BoxType.category.code` — `parent or self` — so a type whose parent is
+    // wrong doesn't error, it just lands in the wrong bucket. In July 2026 every core type in the
+    // live export was parented to Other, so a blind regen would have moved ~70k boxes' worth of
+    // BUTTS/SLABS/WHOLE CORE/SPOT CORES/SKELETONIZED CORE/CORESAMPLES to grey and quietly removed
+    // the purple from the map. A group we have a colour for going to ZERO members is not a
+    // legitimate state — it means the app's BoxType tree lost a parent, not that the data changed.
+    const present = new Set([...seen.values()].map((g) => g.toUpperCase()));
+    const missing = UCRC_BOX_GROUP_ORDER.filter((g) => g !== 'OTHER' && !present.has(g));
+    if (missing.length && !process.argv.includes('--force')) {
+        console.error(
+            `[boxtype-membership] REFUSING TO WRITE — no box type in the export belongs to: ${missing.join(', ')}.\n` +
+            `  Groups found: ${[...present].sort().join(', ') || '(none)'}\n` +
+            '  This is an upstream data problem: the UCRC app publishes box_type_group from\n' +
+            '  BoxType.category (parent or self), so an unparented/mis-parented type falls into OTHER.\n' +
+            '  Fix the BoxType parents in the management app, re-run its publish, then regenerate.\n' +
+            '  Re-run with --force only if a group genuinely has no members any more.',
+        );
+        process.exit(1);
+    }
+
     const entries = [...seen]
         .sort(([a], [b]) => a.localeCompare(b))
         .map(([code, group]) => `    { code: ${JSON.stringify(code)}, group: ${JSON.stringify(group)} },`)
