@@ -18,7 +18,7 @@ export type UcrcBoxGroup = 'CORE' | 'CUTTINGS' | 'OTHER';
 
 // The three colors this render uses — legend header AND fill for every code in the group. ugs-styles owns these.
 export const UCRC_BOX_GROUP_COLORS: Record<UcrcBoxGroup, string> = {
-    CORE: '#7051B5',
+    CORE: '#8266BE',
     CUTTINGS: '#1A9641',
     OTHER: '#BDBDBD',
 };
