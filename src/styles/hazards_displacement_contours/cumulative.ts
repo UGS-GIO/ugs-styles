@@ -4,6 +4,7 @@
 // mutually exclusive so no exclusion filter is needed; the [-1,1) bin plays
 // the role of the old "zero" uncertainty band (flagged via ugs:zero).
 // GeoServer is retiring — this committed module is the source of truth; edit freely.
+import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -35,27 +36,25 @@ const bins: Bin[] = [
     { rule: 'class_6', title: '-5 – -3 in', color: '#f9dccb', zero: false, lo: -5, hi: -3 },
     { rule: 'class_7', title: '-3 – -1 in', color: '#fce8da', zero: false, lo: -3, hi: -1 },
     { rule: 'class_8', title: '-1 – 1 in (near zero)', color: '#ffffff', zero: true, lo: -1, hi: 1 },
-    { rule: 'class_9', title: '1 – 3 in', color: '#bea0d4', zero: false, lo: 1, hi: 3 },
-    { rule: 'class_10', title: '3 – 5 in', color: '#c0a8d0', zero: false, lo: 3, hi: 5 },
-    { rule: 'class_11', title: '5 – 7 in', color: '#a8b8d8', zero: false, lo: 5, hi: 7 },
+    { rule: 'class_9', title: '1 – 3 in', color: '#e0f0f8', zero: false, lo: 1, hi: 3 },
+    { rule: 'class_10', title: '3 – 5 in', color: '#c4e2f0', zero: false, lo: 3, hi: 5 },
+    { rule: 'class_11', title: '5 – 7 in', color: '#a8d4e8', zero: false, lo: 5, hi: 7 },
     { rule: 'class_12', title: '7 – 9 in', color: '#88c0dc', zero: false, lo: 7, hi: 9 },
-    { rule: 'class_13', title: '9 – 11 in', color: '#a8d4e8', zero: false, lo: 9, hi: 11 },
-    { rule: 'class_14', title: '11 – 13 in', color: '#c4e2f0', zero: false, lo: 11, hi: 13 },
-    { rule: 'class_15', title: '> 13 in', color: '#e0f0f8', zero: false, lo: 13 },
+    { rule: 'class_13', title: '9 – 11 in', color: '#a8b8d8', zero: false, lo: 9, hi: 11 },
+    { rule: 'class_14', title: '11 – 13 in', color: '#c0a8d0', zero: false, lo: 11, hi: 13 },
+    { rule: 'class_15', title: '> 13 in', color: '#bea0d4', zero: false, lo: 13 },
 ];
 
-function filterFor(bin: Bin) {
-    const field = ['get', 'value_inches'];
-    if (bin.lo === undefined) {
-        return ['<', field, bin.hi];
-    }
-    if (bin.hi === undefined) {
-        return ['>=', field, bin.lo];
-    }
-    return ['all', ['>=', field, bin.lo], ['<', field, bin.hi]];
+// Half-open [lo, hi): open-ended tails carry only the bound they have.
+function filterFor({ lo, hi }: Bin): FilterSpecification {
+    const field: ExpressionSpecification = ['get', 'value_inches'];
+    if (lo === undefined && hi !== undefined) return ['<', field, hi];
+    if (hi === undefined && lo !== undefined) return ['>=', field, lo];
+    if (lo !== undefined && hi !== undefined) return ['all', ['>=', field, lo], ['<', field, hi]];
+    throw new Error('bin needs at least one bound');
 }
 
-const layers: StyleLayer[] = bins.flatMap((bin, i) => {
+const layers: StyleLayer[] = bins.flatMap((bin, i): StyleLayer[] => {
     const metadata = { 'ugs:rule': bin.rule, 'ugs:title': bin.title, 'ugs:zero': bin.zero };
     const filter = filterFor(bin);
     return [
@@ -76,6 +75,6 @@ const layers: StyleLayer[] = bins.flatMap((bin, i) => {
             filter,
         },
     ];
-}) as StyleLayer[];
+});
 
 export default layers;
