@@ -1,0 +1,133 @@
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - text: An official website of the state of Utah.
+      - button "Here is how you know" [ref=e5] [cursor=pointer]
+    - dialog [ref=e9]:
+      - generic [ref=e10]:
+        - generic [ref=e11]:
+          - generic [ref=e12]: 
+          - generic [ref=e13]:
+            - strong [ref=e14]: Official Utah websites use utah.gov in the browser's address bar.
+            - text: A Utah.gov website belongs to an official government organization in the state of Utah.
+        - generic [ref=e16]:
+          - generic [ref=e17]: 
+          - generic [ref=e18]:
+            - strong [ref=e19]: Be careful when sharing sensitive information.
+            - text: Share sensitive information only on secure official Utah.gov websites.
+        - generic [ref=e20]: An official website of the state of Utah © state of Utah
+  - banner "Utah.gov Header" [ref=e29]:
+    - link "Utah Geological Survey" [ref=e31] [cursor=pointer]:
+      - /url: https://geology.utah.gov
+  - generic [ref=e35]:
+    - banner [ref=e36]:
+      - link [ref=e37] [cursor=pointer]:
+        - /url: /
+        - strong [ref=e38]: UGS Warehouse
+      - generic [ref=e39]:
+        - text: STAC catalog ·
+        - link "maps-assets.geology.utah.gov/warehouse/stac/catalog.json" [ref=e40] [cursor=pointer]:
+          - /url: https://maps-assets.geology.utah.gov/warehouse/stac/catalog.json
+      - generic "viewer build — last updated 2026-07-27 (73ca3fa-dirty)" [ref=e41]: updated 2026-07-27 · 73ca3fa-dirty
+      - generic [ref=e42]:
+        - generic [ref=e43] [cursor=pointer]: Catalog
+        - generic [ref=e44] [cursor=pointer]: Map
+        - generic [ref=e45] [cursor=pointer]: Search
+        - generic [ref=e46] [cursor=pointer]: Architecture
+        - generic [ref=e47] [cursor=pointer]: Guide
+        - button "Toggle theme" [ref=e48]: ☾
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - textbox "Search all collections…" [ref=e51]
+        - generic "Show only publications with an interactive 3D viewer" [ref=e52] [cursor=pointer]: 3D
+        - generic "One list of every publication across all series, newest first" [ref=e53] [cursor=pointer]: All items
+      - heading "Collections" [level=2] [ref=e54]
+      - generic [ref=e55]:
+        - generic [ref=e56] [cursor=pointer]:
+          - paragraph [ref=e57]: External
+          - generic [ref=e58]: ugs-external
+          - generic "Latest covers — click to open" [ref=e59]:
+            - img "Geologic Mapping of the Vernal NW Quadrangle, Uintah County, UT, and Stratigraphic Relationships of the Duchesne River Formation and Bishop Conglomerate" [ref=e60]
+            - img "Geologic Mapping of the Vernal NW Quadrangle, Uintah County, UT, and Stratigraphic Relationships of the Duchesne River Formation and Bishop Conglomerate" [ref=e61]
+            - img "Geologic Map of the Little Horse Canyon Quadrangle, Nevada and Utah" [ref=e62]
+            - img "Geologic Map of the Cove Quadrandgle, Nevada and Utah" [ref=e63]
+            - img "Earthquake data for the Utah region January 1, 1986 to December 31, 1988" [ref=e64]
+          - generic [ref=e65]: 125 items
+          - generic [ref=e66]: by series
+          - generic [ref=e67]: 18 on map
+        - generic [ref=e68] [cursor=pointer]:
+          - paragraph [ref=e69]: Ugs Geologic Maps
+          - generic [ref=e70]: ugs-geologic-maps
+          - generic [ref=e71]: 1 item
+          - text: no map data
+        - generic [ref=e72] [cursor=pointer]:
+          - paragraph [ref=e73]: Mining District Files
+          - generic [ref=e74]: ugs-mining-district-files
+          - generic [ref=e75]: 4216 items
+          - generic [ref=e76]: by series
+          - text: no map data
+        - generic [ref=e77] [cursor=pointer]:
+          - paragraph [ref=e78]: Publications
+          - generic [ref=e79]: ugs-publications
+          - generic [ref=e80]: 3204 items
+          - generic [ref=e81]: by series
+          - generic [ref=e82]: 755 on map
+        - generic [ref=e83] [cursor=pointer]:
+          - paragraph [ref=e84]: Rasters
+          - generic [ref=e85]: ugs-rasters
+          - generic [ref=e86]: 2 items
+          - generic [ref=e87]: by series
+        - generic [ref=e88] [cursor=pointer]:
+          - paragraph [ref=e89]: Ugs Serving Topics
+          - generic [ref=e90]: ugs-serving-topics
+          - generic "Latest covers — click to open" [ref=e91]:
+            - img "UCRC Wells" [ref=e92]
+            - img "Utah Counties" [ref=e93]
+            - img "UCRC Basins" [ref=e94]
+            - img "Geologic Map Units" [ref=e95]
+            - img "Surface Fault Rupture Special Study Zones" [ref=e96]
+          - generic [ref=e97]: 22 items
+  - generic [ref=e98]:
+    - generic [ref=e99]:
+      - separator [ref=e112]
+      - generic [ref=e113]:
+        - generic [ref=e114]: An official website of the state of Utah
+        - generic [ref=e115]: © state of Utah
+    - list [ref=e117]:
+      - listitem [ref=e118]:
+        - link "Utah.gov Home , opens in a new tab" [ref=e119] [cursor=pointer]:
+          - /url: https://www.utah.gov/index.html
+          - text: Utah.gov Home
+          - generic [ref=e120]:
+            - generic [ref=e121]: ", opens in a new tab"
+            - generic [ref=e122]: 
+      - listitem [ref=e123]:
+        - link "Terms of Use , opens in a new tab" [ref=e124] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/disclaimer.html
+          - text: Terms of Use
+          - generic [ref=e125]:
+            - generic [ref=e126]: ", opens in a new tab"
+            - generic [ref=e127]: 
+      - listitem [ref=e128]:
+        - link "Privacy Policy , opens in a new tab" [ref=e129] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/privacypolicy.html
+          - text: Privacy Policy
+          - generic [ref=e130]:
+            - generic [ref=e131]: ", opens in a new tab"
+            - generic [ref=e132]: 
+      - listitem [ref=e133]:
+        - link "Accessibility , opens in a new tab" [ref=e134] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/accessibility.html
+          - text: Accessibility
+          - generic [ref=e135]:
+            - generic [ref=e136]: ", opens in a new tab"
+            - generic [ref=e137]: 
+      - listitem [ref=e138]:
+        - link "Translate , opens in a new tab" [ref=e139] [cursor=pointer]:
+          - /url: https://www.utah.gov/support/translate.html
+          - text: Translate
+          - generic [ref=e140]:
+            - generic [ref=e141]: ", opens in a new tab"
+            - generic [ref=e142]: 
