@@ -29,6 +29,6 @@ const layers: StyleLayer[] = [
         "metadata": METADATA,
         "paint": { "line-color": "#cc8899", "line-width": 0.5 },
     },
-] as unknown as StyleLayer[];
+];
 
 export default layers;

@@ -7,6 +7,7 @@
 //
 // The single class is filtered explicitly rather than left unfiltered, so a new gdchazardunit value shows
 // up as unclassified (grey fallback) instead of being silently drawn as if it were this class.
+import type { FilterSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -17,7 +18,8 @@ export const spec = {
     title: "polygon",
 } satisfies Binding & { render: string };
 
-const CLASS_FILTER = ['all', ['==', ['get', 'gdchazardunit'], 'EFZgdc']];
+// Annotated: a bare const widens to string[][] and never picks up the layer's contextual type.
+const CLASS_FILTER: FilterSpecification = ['all', ['==', ['get', 'gdchazardunit'], 'EFZgdc']];
 const METADATA = {
     'ugs:rule': 'EFZgdc',
     'ugs:title': 'Generalized Area of Giant Desiccation Cracks',
@@ -45,6 +47,6 @@ const layers: StyleLayer[] = [
         },
         "filter": CLASS_FILTER,
     },
-] as unknown as StyleLayer[];
+];
 
 export default layers;

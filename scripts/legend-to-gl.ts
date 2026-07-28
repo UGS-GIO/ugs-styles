@@ -53,8 +53,9 @@ export function cqlToGl(cql: string, attrMap: Record<string, string> = {}): GLEx
         const re = /([A-Za-z_]\w*)\s*(>=|<=|<>|!=|=|>|<)\s*(?:'([^']*)'|(-?\d+(?:\.\d+)?))/g;
         let m: RegExpExecArray | null;
         while ((m = re.exec(chunk)) !== null) {
-            const field = m[1]!, rawOp = m[2]!;
-            const raw = m[3] ?? m[4]!;
+            const [, field, rawOp, quoted, numeric] = m;
+            const raw = quoted ?? numeric;
+            if (!field || !rawOp || raw === undefined) continue;
             const op = rawOp === '=' ? '==' : rawOp === '<>' ? '!=' : rawOp;
             const isNum = raw.trim() !== '' && Number.isFinite(Number(raw));
             out.push([op, ['get', attrMap[field] ?? field], isNum ? Number(raw) : raw]);
@@ -193,4 +194,4 @@ export default layers;
     console.log(`+ ${itemId}/${render}: ${rules.length} rules -> ${layers.length} layers`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e: unknown) => { console.error(e); process.exit(1); });
