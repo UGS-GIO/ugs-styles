@@ -2,11 +2,13 @@
  * Pie-wedge sprite-sheet generator for the UCRC wells `by-boxtype` render.
  *
  * `box_type_codes` is a comma-delimited multi-value field, so it can't be a single fill color —
- * the authoritative ugs-map-viewer draws a pie disc split into colored wedges per box type, at
- * RUNTIME via canvas. ugs-styles is static CDN JSON, so we pre-bake the same discs into a
- * MapLibre sprite sheet here (one sprite per distinct combo present in the live data), published
- * alongside the style. The wedge drawing is a faithful port of
- * ugs-map-viewer/src/lib/map/pie-wedge-sprites.ts (same geometry + colors).
+ * a well's icon is a disc split into colored wedges. Wedges are per GROUP (Core / Cuttings /
+ * Other), not per box type, so a disc carries at most 3 slices however many types the well holds.
+ * ugs-styles is static CDN JSON, so we pre-bake the discs into a MapLibre sprite sheet here (one
+ * sprite name per distinct combo in the live data, sharing a frame with every other combo that
+ * resolves to the same groups), published alongside the style. Geometry is a port of
+ * ugs-map-viewer/src/lib/map/pie-wedge-sprites.ts; the per-type shading it does is intentionally
+ * dropped here.
  *
  * Output (consumed by the viewer via map.addSprite(url)):
  *   dist-json/styles/enmin_ucrc_wells_current/sprite.{png,json}
@@ -20,7 +22,8 @@ import { fileURLToPath } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 import { createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
-import { UCRC_BOX_TYPE_ORDER, boxTypeColor, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES } from '../src/palettes/ucrc-boxtype';
+import type { UcrcBoxGroup } from '../src/palettes/ucrc-boxtype';
+import { UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, boxTypeGroup, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES } from '../src/palettes/ucrc-boxtype';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
@@ -35,36 +38,44 @@ const STROKE_COLOR = '#1a1a1a';
 
 const spriteName = (combo: string) => `${UCRC_BOX_TYPE_NAMESPACE}-${combo}`;
 
-/** Draw one combo's pie disc into ctx at (ox,oy) in a `scale`d coordinate space (1 or 2). */
-function drawCombo(ctx: SKRSContext2D, ox: number, oy: number, combo: string, scale: number): void {
+/**
+ * The groups a combo touches, in fixed group order — the disc's wedges. Color is per GROUP, so a
+ * combo of five CORE types is ONE purple wedge, not five: a disc never has more than 3 slices.
+ * Unknown tokens fall into OTHER via boxTypeGroup.
+ */
+function groupsOf(combo: string): UcrcBoxGroup[] {
+    const present = combo.split(',').map((s) => s.trim()).filter(Boolean);
+    const hit = new Set(present.map(boxTypeGroup));
+    return UCRC_BOX_GROUP_ORDER.filter((g) => hit.has(g));
+}
+
+/** Draw one disc into ctx at (ox,oy) in a `scale`d coordinate space (1 or 2). */
+function drawDisc(ctx: SKRSContext2D, ox: number, oy: number, groups: UcrcBoxGroup[], scale: number): void {
     const size = SIZE * scale;
     const sw = STROKE_W * scale;
-    const present = new Set(combo.split(',').map((s) => s.trim()).filter(Boolean));
-    // One wedge per specific token, coloured with that token's shade of its group colour. Known
-    // tokens draw in the fixed group/shade order; any unknown token trails (default gray).
-    const known = UCRC_BOX_TYPE_ORDER.filter((t) => present.has(t));
-    const tokens = [...known, ...[...present].filter((t) => !UCRC_BOX_TYPE_ORDER.includes(t))];
-    if (tokens.length === 0) return;  // empty combo → transparent cell
+    if (groups.length === 0) return;  // empty combo → transparent cell
 
     const cx = ox + size / 2, cy = oy + size / 2;
     const rFill = size / 2, rStroke = size / 2 - sw / 2;
-    const twoPi = Math.PI * 2, sweep = twoPi / tokens.length;
+    // Equal sweep per group present: token counts are "how many box types were recorded", not a
+    // quantity of material, so weighting wedges by them would imply a proportion that isn't there.
+    const twoPi = Math.PI * 2, sweep = twoPi / groups.length;
     let angle = Math.PI;  // start at 9 o'clock, sweep clockwise (viewer parity)
 
-    for (const token of tokens) {
+    for (const g of groups) {
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.arc(cx, cy, rFill, angle, angle + sweep);
         ctx.closePath();
-        ctx.fillStyle = boxTypeColor(token);
+        ctx.fillStyle = UCRC_BOX_GROUP_COLORS[g];
         ctx.fill();
         angle += sweep;
     }
     ctx.strokeStyle = STROKE_COLOR;
     ctx.lineWidth = sw;
-    if (tokens.length > 1) {  // wedge dividers
+    if (groups.length > 1) {  // wedge dividers — none on a single-group disc, so it reads as solid
         let a = Math.PI;
-        for (let i = 0; i < tokens.length; i++) {
+        for (let i = 0; i < groups.length; i++) {
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.lineTo(cx + Math.cos(a) * rStroke, cy + Math.sin(a) * rStroke);
@@ -77,19 +88,33 @@ function drawCombo(ctx: SKRSContext2D, ox: number, oy: number, combo: string, sc
     ctx.stroke();
 }
 
-/** Pack one sheet at `scale` (1 or 2) → {png, index}. index maps sprite name → frame. */
+/**
+ * Pack one sheet at `scale` (1 or 2) → {png, index}. index maps sprite name → frame.
+ * Every combo that resolves to the same set of groups draws the same disc, so the sheet holds one
+ * cell per distinct group-set (≤ 7) and the index points every combo name at the shared frame —
+ * icon-image still resolves by exact code string, the pixels behind it are just deduped.
+ */
 function buildSheet(combos: string[], scale: number): { png: Buffer; index: Record<string, unknown> } {
     const cell = SIZE * scale;
-    const cols = Math.ceil(Math.sqrt(combos.length));
-    const rows = Math.ceil(combos.length / cols);
+    const byKey = new Map<string, { groups: UcrcBoxGroup[]; combos: string[] }>();
+    for (const combo of combos) {
+        const groups = groupsOf(combo);
+        const key = groups.join('+');
+        const entry = byKey.get(key);
+        if (entry) entry.combos.push(combo);
+        else byKey.set(key, { groups, combos: [combo] });
+    }
+    const cells = [...byKey.values()];
+    const cols = Math.ceil(Math.sqrt(cells.length));
+    const rows = Math.ceil(cells.length / cols);
     const canvas = createCanvas(cols * cell, rows * cell);
     const ctx = canvas.getContext('2d');
     const index: Record<string, unknown> = {};
-    combos.forEach((combo, i) => {
+    cells.forEach(({ groups, combos: names }, i) => {
         const col = i % cols, row = Math.floor(i / cols);
         const x = col * cell, y = row * cell;
-        drawCombo(ctx, x, y, combo, scale);
-        index[spriteName(combo)] = { x, y, width: cell, height: cell, pixelRatio: scale };
+        drawDisc(ctx, x, y, groups, scale);
+        for (const combo of names) index[spriteName(combo)] = { x, y, width: cell, height: cell, pixelRatio: scale };
     });
     return { png: canvas.toBuffer('image/png'), index };
 }

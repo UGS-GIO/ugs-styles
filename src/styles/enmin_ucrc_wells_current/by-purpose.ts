@@ -25,7 +25,7 @@ export const spec = {
     title: 'UCRC wells by purpose',
     field: 'purpose',   // the attribute this render symbolizes (consumers wire filters to it)
     // Legend = the source of truth for this render's symbology (fill + stroke per purpose). Flat
-    // (no `values`): each entry's label IS the field value. Consumers derive colours from here.
+    // (no `values`): each entry's label IS the field value. Consumers derive colors from here.
     // Legends only THIS layer's vocabulary — the palette also carries wells_spatial's older names
     // for the same categories (Mining / Building or Construction), which draw nothing here.
     legend: UCRC_WELLS_PURPOSE_LABELS.map((p) => ({
