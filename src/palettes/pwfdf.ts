@@ -18,6 +18,24 @@ export const PWFDF_LIKELIHOOD_BINS = [
 /** The 15-minute rainfall intensities (mm/h) the assessment models, one render each. */
 export const PWFDF_INTENSITIES = [16, 20, 24, 28, 30, 32, 36, 40] as const;
 
+/**
+ * Runout areas (PWFDF-R), coloured by the debris-flow simulation index threshold each polygon was
+ * built at. Lower threshold = larger area, so classes draw low -> high and the tightest extent ends
+ * up on top. Errata in the published table: the 0.6 class lists RGB (158, 154, 20) against HEX
+ * `#3f007d`; they aren't the same colour and the HEX completes the purple ramp, so the HEX wins.
+ */
+// `lo`/`hi` are the match window, written out rather than derived from `thr` — computing them
+// yields 0.6 - 0.15 = 0.44999999999999996 in the published JSON. The top class is open-ended so a
+// threshold above the current maximum still draws instead of silently vanishing.
+export const PWFDF_RUNOUT_CLASSES = [
+    { thr: 0, color: '#9e9ac8', label: 'DFSI threshold 0', lo: null, hi: 0.15 },
+    { thr: 0.3, color: '#6f4da3', label: 'DFSI threshold 0.3', lo: 0.15, hi: 0.45 },
+    { thr: 0.6, color: '#3f007d', label: 'DFSI threshold 0.6', lo: 0.45, hi: null },
+] as const;
+
+/** The design storms (15-min rainfall intensity, mm/h) the runout assessment models. */
+export const PWFDF_RUNOUT_INTENSITIES = [20, 40, 60, 80] as const;
+
 /** Legend for a likelihood render — the bins verbatim, so consumers never re-derive the ramp. */
 export const likelihoodLegend = () =>
     PWFDF_LIKELIHOOD_BINS.map((b) => ({ label: b.label, color: b.color }));
