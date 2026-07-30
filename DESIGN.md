@@ -161,6 +161,11 @@ rare — every handwritten style is future drift.
 - `field` exists in the layer (check against the parquet schema / `schema_registry`).
 - palette covers the derived domain → **warn + fallback** on unmapped values (don't fail; data leads).
 - generated GL validates against the MapLibre style spec.
+- a `vector` render **draws geometry** — at least one `fill` / `line` / `circle` / `fill-extrusion` /
+  `heatmap` layer, or a `symbol` layer placing an `icon-image`. Text-only symbol layers label
+  geometry they can't draw, so a labels-only fragment is a blank map that passes every id-based
+  check (#34). Zoom-gated drawing layers **warn** — `minzoom` is usually faithful cartography, but a
+  render that only appears at z11 is indistinguishable from a missing one at z5.
 - Skip (don't fail) styles with no `spec`/binding — they're legacy, pending bind-or-delete (§9).
 
 ---
