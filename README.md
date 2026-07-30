@@ -94,6 +94,8 @@ export const spec = {
 
 - **No `source` in fragments** — the consumer attaches the PMTiles source (via STAC).
 - **`itemId` is the join key** — must equal the warehouse STAC item id, or it never binds.
+- **Every vector render draws geometry** — a `fill`/`line`/`circle`/`fill-extrusion`/`heatmap` layer,
+  or a `symbol` with an `icon-image`. Labels alone are not a style, and `build:json` fails on them.
 - Don't translate SLDs. Pick an archetype + palette; the old SLDs are color reference only.
 
 ## Consume from a viewer
