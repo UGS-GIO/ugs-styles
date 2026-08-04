@@ -3,22 +3,19 @@
 // Box type code -> color group, read from the served `ucrc_boxes` parquet. The UCRC management
 // app owns this mapping (BoxType.parent tree); this file is a committed snapshot of it. Colors +
 // shade order are NOT here — those live in ucrc-boxtype.ts (ugs-styles owns style).
-//
-// Seed values below = the previously-hardcoded membership; regenerate via
-//   npm run gen:boxtype-membership
-// once `box_type_code` / `box_type_group` are published on the boxes export.
 export const UCRC_BOX_MEMBERSHIP: readonly { code: string; group: string }[] = [
-    { code: 'BUTTS', group: 'CORE' },
-    { code: 'CORE CHIPS', group: 'CUTTINGS' },
-    { code: 'CORESAMPLES', group: 'CORE' },
-    { code: 'CUTTINGS', group: 'CUTTINGS' },
-    { code: 'OTHER', group: 'OTHER' },
-    { code: 'OUTCROP SAMPLES', group: 'OTHER' },
-    { code: 'SIDEWALL PLUGS', group: 'OTHER' },
-    { code: 'SKELETONIZED CORE', group: 'CORE' },
-    { code: 'SLABS', group: 'CORE' },
-    { code: 'SPOT CORES', group: 'CORE' },
-    { code: 'THIN SECTIONS', group: 'OTHER' },
-    { code: 'UNKNOWN', group: 'OTHER' },
-    { code: 'WHOLE CORE', group: 'CORE' },
+    { code: "BUTTS", group: "CORE" },
+    { code: "CORE CHIPS", group: "CUTTINGS" },
+    { code: "CORESAMPLES", group: "CORE" },
+    { code: "CUTTINGS", group: "CUTTINGS" },
+    { code: "OIL SAMPLES", group: "OTHER" },
+    { code: "OTHER", group: "OTHER" },
+    { code: "OUTCROP SAMPLES", group: "OTHER" },
+    { code: "SIDEWALL PLUGS", group: "OTHER" },
+    { code: "SKELETONIZED CORE", group: "CORE" },
+    { code: "SLABS", group: "CORE" },
+    { code: "SPOT CORES", group: "CORE" },
+    { code: "THIN SECTIONS", group: "OTHER" },
+    { code: "UNKNOWN", group: "OTHER" },
+    { code: "WHOLE CORE", group: "CORE" },
 ];
