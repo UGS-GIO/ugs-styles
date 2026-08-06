@@ -65,9 +65,17 @@ jobs:
             "gs://${GCS_BUCKET}/${GCS_PREFIX}/**/*.json"
 
       # Rebind STAC renders to the just-published styles. `--wait` surfaces the result in this
-      # run; the job re-fetches the manifest and rewrites only the items whose renders changed
+      # run; the job re-fetches the manifest and rewrites the items whose renders changed
       # (seconds — no data reingest). The CDN is already updated above, so styles are live for
       # any live-manifest consumer even if this step is skipped.
+      #
+      # `--refresh` (overriding the job's baked args) ALSO rebuilds the aggregated `items.json`
+      # catalog feed, not just the per-item docs. The Esri VectorTileServer endpoint
+      # (ugs-warehouse-tiles) gates "does this topic have a published style?" on `items.json`,
+      # so without --refresh a newly published style 404s ("nothing Esri can add") on load until
+      # some unrelated ingest happens to rebuild the catalog. This only regenerates small JSON
+      # index docs — it renders/stores no tiles (tiles are sliced on demand from the PMTiles).
+      # See ALL-5534.
       #
       # Work-box prerequisites (one-time):
       #   1. Create the job (same image as the ingest job, restyle command):
@@ -80,4 +88,5 @@ jobs:
       - name: Rebind warehouse STAC renders
         run: |
           gcloud run jobs execute "${RESTYLE_JOB}" \
-            --project "${WAREHOUSE_PROJECT}" --region "${WAREHOUSE_REGION}" --wait
+            --project "${WAREHOUSE_PROJECT}" --region "${WAREHOUSE_REGION}" \
+            --args="-m,ugs_warehouse.restyle,--refresh" --wait
