@@ -12,22 +12,13 @@ import { readdir, mkdir, writeFile, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { generate } from '../src/archetypes';
+import { auditDraw, normalizeFills } from '../src/layers';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const STYLES_DIR = resolve(ROOT, 'src', 'styles');
 const OUT_DIR = resolve(ROOT, 'dist-json');
 const STYLES_OUT = resolve(OUT_DIR, 'styles');
-
-// A `fill` layer with no fill-color / fill-pattern renders MapLibre's default OPAQUE BLACK — an
-// artifact of SLD polygons that were stroke-only (no `<Fill>`). The SLD→GL seed emits an empty
-// fill for those; drop it so the layer is outline-only as intended (we do NOT invent a fill
-// color — see feedback-no-custom-styling). Stroke/label layers in the same style are kept.
-type GLLayer = { type?: string; paint?: Record<string, unknown> };
-const isPaintlessFill = (l: GLLayer): boolean =>
-    l.type === 'fill' && !l.paint?.['fill-color'] && !l.paint?.['fill-pattern'];
-const dropPaintlessFills = (layers: GLLayer[]): GLLayer[] =>
-    Array.isArray(layers) ? layers.filter((l) => !isPaintlessFill(l)) : layers;
 
 // Manifest entry keyed by STAC item id — what the warehouse joins on (docs/STYLING.md).
 // `layer` (the dir name) is kept for human debugging only.
@@ -70,7 +61,7 @@ const main = async () => {
                 console.warn(`· skip ${layer.name}/${fileId} — no 'spec' export yet (not in manifest)`);
                 continue;
             }
-            const layersOutput = dropPaintlessFills(mod.default ?? mod.layers ?? generate(spec));
+            const layersOutput = normalizeFills(mod.default ?? mod.layers ?? generate(spec));
             const renderId = spec.render ?? fileId;
 
             const dupKey = `${spec.itemId}/${renderId}`;
@@ -82,6 +73,23 @@ const main = async () => {
             seen.add(dupKey);
 
             const relPath = `styles/${layer.name}/${renderId}.json`;
+
+            // A vector style that draws no geometry is indistinguishable from a MISSING style on the
+            // map — MapLibre activates nothing and never even requests a tile — yet it passes every
+            // id-based check we have (#34). Labels alone are not a style; fail the build.
+            const draw = auditDraw(layersOutput);
+            if ((spec.kind ?? 'vector') !== 'raster' && !draw.draws) {
+                console.error(`✗ ${relPath} — no layer draws geometry (labels/icons alone don't); the map would show nothing`);
+                errors++;
+                continue;
+            }
+            // Not an error: scale gating is real cartography (81k PLSS sections at z5 is mush) and
+            // most of these gates are faithful to the source SLD's MaxScaleDenominator. But a layer
+            // that only appears deep in the zoom range LOOKS unstyled to anyone opening the map at
+            // z5, so say so out loud rather than let it read as a silent no-op.
+            if (draw.minzoom > 0) {
+                console.warn(`  ! ${relPath} — draws only at z≥${draw.minzoom.toFixed(2)}; below that the layer looks unstyled`);
+            }
             const outFile = resolve(OUT_DIR, relPath);
             await mkdir(dirname(outFile), { recursive: true });
             await writeFile(outFile, JSON.stringify({ layers: layersOutput }, null, 2));
@@ -107,7 +115,7 @@ const main = async () => {
     await writeFile(resolve(OUT_DIR, 'index.json'), JSON.stringify(manifest, null, 2));
     console.log(`+ index.json (${manifest.length} bound renders)`);
     if (errors) {
-        console.error(`\n${errors} duplicate render id(s) — itemId+render must be unique. Fix before release.`);
+        console.error(`\n${errors} build error(s) — see the ✗ lines above. Fix before release.`);
         process.exit(1);
     }
 };

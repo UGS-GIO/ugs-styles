@@ -11,11 +11,21 @@ export const spec = {
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
+//
+// The section outline was lost in the seed: the SLD's PolygonSymbolizer is
+// `<Fill fill-opacity="0"/><Stroke/>`, and the empty `<Stroke/>` — SLD 1.0 defaults, black 1px —
+// came through as a fill with no paint, which the build then dropped, leaving labels only (#34).
+// Re-read from prod GeoServer GetStyles (energy_minerals_plss_sections_style, 2026-07-29) and
+// republished as the `line` it always was. `minzoom` matches MaxScaleDenominator 250000.
 const layers: StyleLayer[] = [
     {
         "id": "enmin_plss_sections-0",
         "minzoom": 11.126916814491269,
-        "type": "fill"
+        "type": "line",
+        "paint": {
+            "line-color": "#000000",
+            "line-width": 1
+        }
     },
     {
         "id": "enmin_plss_sections-1",
