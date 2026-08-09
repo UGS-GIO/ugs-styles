@@ -25,7 +25,7 @@ const layers: StyleLayer[] = [
     {
         id: 'enmin_ccus_cbcounty-label',
         type: 'symbol',
-        layout: { 'text-field': '{name20}', 'text-font': ['Arial'], 'text-size': 11 },
+        layout: { 'text-field': '{name20}', 'text-font': ['Noto Sans Regular'], 'text-size': 11 },
         paint: { 'text-color': '#37474f', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
     },
 ];

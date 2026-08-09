@@ -12,6 +12,7 @@ import { readdir, mkdir, writeFile, rm } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { generate } from '../src/archetypes';
+import { FONTSTACKS, GLYPHS_PATH } from '../src/fonts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -23,11 +24,20 @@ const STYLES_OUT = resolve(OUT_DIR, 'styles');
 // artifact of SLD polygons that were stroke-only (no `<Fill>`). The SLD→GL seed emits an empty
 // fill for those; drop it so the layer is outline-only as intended (we do NOT invent a fill
 // color — see feedback-no-custom-styling). Stroke/label layers in the same style are kept.
-type GLLayer = { type?: string; paint?: Record<string, unknown> };
+type GLLayer = { type?: string; paint?: Record<string, unknown>; layout?: Record<string, unknown> };
 const isPaintlessFill = (l: GLLayer): boolean =>
     l.type === 'fill' && !l.paint?.['fill-color'] && !l.paint?.['fill-pattern'];
 const dropPaintlessFills = (layers: GLLayer[]): GLLayer[] =>
     Array.isArray(layers) ? layers.filter((l) => !isPaintlessFill(l)) : layers;
+
+// Glyphs that 404 render no labels at all, silently (warehouse#116) — so a fontstack we don't
+// publish fails the build instead of a map.
+const fontstacksOf = (layers: GLLayer[]): string[] =>
+    layers.flatMap((l) => {
+        const font = l.layout?.['text-font'];
+        return Array.isArray(font) ? font.filter((n): n is string => typeof n === 'string') : [];
+    });
+const hasLabels = (layers: GLLayer[]): boolean => layers.some((l) => l.layout?.['text-field'] !== undefined);
 
 // Manifest entry keyed by STAC item id — what the warehouse joins on (docs/STYLING.md).
 // `layer` (the dir name) is kept for human debugging only.
@@ -36,6 +46,7 @@ type ManifestEntry = {
     assets: string[]; path: string; layer: string; title?: string;
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
+    glyphs?: string;   // CDN-relative glyph template — present when the render has label layers
     // Explicit legend: the render's symbology. `values` (grouped renders) = the specific field
     // values an entry rolls up, each with its own shade; `stroke` = optional swatch outline (flat
     // renders). Consumers derive colors from here verbatim.
@@ -81,6 +92,15 @@ const main = async () => {
             }
             seen.add(dupKey);
 
+            const unhostable = [...new Set(fontstacksOf(layersOutput))]
+                .filter((f) => !FONTSTACKS.some((known) => known === f));
+            if (unhostable.length) {
+                console.error(`✗ ${layer.name}/${renderId} — text-font we don't publish: `
+                    + `${unhostable.join(', ')} (pick from ${FONTSTACKS.join(', ')} — src/fonts.ts)`);
+                errors++;
+                continue;
+            }
+
             const relPath = `styles/${layer.name}/${renderId}.json`;
             const outFile = resolve(OUT_DIR, relPath);
             await mkdir(dirname(outFile), { recursive: true });
@@ -96,6 +116,8 @@ const main = async () => {
                 ...(spec.colormap_name ? { colormap_name: spec.colormap_name } : {}),
                 ...(spec.rescale ? { rescale: spec.rescale } : {}),
                 ...(spec.sprite ? { sprite: spec.sprite } : {}),
+                // Label renders only; consumers bind it like they bind the sprite.
+                ...(hasLabels(layersOutput) ? { glyphs: GLYPHS_PATH } : {}),
                 ...(spec.legend ? { legend: spec.legend } : {}),
                 ...(spec.field ? { field: spec.field } : {}),
             });
@@ -107,7 +129,7 @@ const main = async () => {
     await writeFile(resolve(OUT_DIR, 'index.json'), JSON.stringify(manifest, null, 2));
     console.log(`+ index.json (${manifest.length} bound renders)`);
     if (errors) {
-        console.error(`\n${errors} duplicate render id(s) — itemId+render must be unique. Fix before release.`);
+        console.error(`\n${errors} render(s) rejected above. Fix before release.`);
         process.exit(1);
     }
 };

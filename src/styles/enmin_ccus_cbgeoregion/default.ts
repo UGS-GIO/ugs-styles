@@ -28,7 +28,7 @@ const layers: StyleLayer[] = [
     {
         id: 'enmin_ccus_cbgeoregion-label',
         type: 'symbol',
-        layout: { 'text-field': '{name}', 'text-font': ['Arial'], 'text-size': 11 },
+        layout: { 'text-field': '{name}', 'text-font': ['Noto Sans Regular'], 'text-size': 11 },
         paint: { 'text-color': '#000000', 'text-halo-color': '#FFFFFF', 'text-halo-width': 1.2 },
     },
 ];

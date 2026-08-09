@@ -28,7 +28,7 @@ const layers: StyleLayer[] = [
         "layout": {
             "text-field": "{frstdivlab}",
             "text-font": [
-                "Arial"
+                "Noto Sans Regular"
             ],
             "text-size": 8,
             "symbol-placement": "point"

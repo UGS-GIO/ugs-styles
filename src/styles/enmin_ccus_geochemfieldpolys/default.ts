@@ -21,7 +21,7 @@ const layers: StyleLayer[] = [
     {
         id: 'enmin_ccus_geochemfieldpolys-label',
         type: 'symbol',
-        layout: { 'text-field': '{label}', 'text-font': ['Arial'], 'text-size': 10 },
+        layout: { 'text-field': '{label}', 'text-font': ['Noto Sans Regular'], 'text-size': 10 },
         paint: { 'text-color': '#311b92', 'text-halo-color': '#ffffff', 'text-halo-width': 1.2 },
     },
 ];
