@@ -69,13 +69,9 @@ jobs:
       # (seconds — no data reingest). The CDN is already updated above, so styles are live for
       # any live-manifest consumer even if this step is skipped.
       #
-      # `--refresh` (overriding the job's baked args) ALSO rebuilds the aggregated `items.json`
-      # catalog feed, not just the per-item docs. The Esri VectorTileServer endpoint
-      # (ugs-warehouse-tiles) gates "does this topic have a published style?" on `items.json`,
-      # so without --refresh a newly published style 404s ("nothing Esri can add") on load until
-      # some unrelated ingest happens to rebuild the catalog. This only regenerates small JSON
-      # index docs — it renders/stores no tiles (tiles are sliced on demand from the PMTiles).
-      # See ALL-5534.
+      # `--refresh` also rebuilds the aggregated `items.json`, which the Esri endpoint gates
+      # "has a published style?" on — without it a new style 404s there until an unrelated ingest
+      # rebuilds the catalog. Index JSON only; no tiles are rendered (ALL-5534).
       #
       # Work-box prerequisites (one-time):
       #   1. Create the job (same image as the ingest job, restyle command):
