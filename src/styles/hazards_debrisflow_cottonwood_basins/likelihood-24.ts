@@ -10,8 +10,11 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Debris-flow likelihood — 24 mm/h',
     field: 'p_24',
+    // Pre-staged: the live basins parquet ships p_20/40/60/80; this storm set lands with the
+    // PWFDF-R ingest. `validate` warns instead of failing until then — clear this when it does.
+    pending: 'ALL-5461',
     legend: likelihoodLegend(),
-} satisfies Binding & { render: string; field: string; legend: { label: string; color: string }[] };
+} satisfies Binding & { render: string; field: string; pending?: string; legend: { label: string; color: string }[] };
 
 const layers: StyleLayer[] = [
     {

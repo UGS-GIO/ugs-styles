@@ -36,4 +36,8 @@ export type StyleSpec = Binding & {
     values?: number[];               // discrete field values, matched with `==`
     breaks?: number[];               // ascending lower bounds of half-open bins, `>=` / `<`
     opacity?: number;                // fill opacity (default 0.7)
+    // Pre-staged: the style is written before its data lands, so `validate` reports unknown fields
+    // as warnings instead of failing the release (the fields don't exist YET). Carry the tracking
+    // id so a stale flag is traceable — clear it once the ingest ships the columns.
+    pending?: string;
 };
