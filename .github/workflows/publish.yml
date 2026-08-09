@@ -39,6 +39,8 @@ jobs:
       # Bake pie-wedge sprite sheets (UCRC wells by-boxtype) from the live GeoParquet → dist-json,
       # so the icon render publishes with its sprites. Must run after build:json (which wipes dist).
       - run: npm run gen:sprites
+      # Glyphs for the label renders. After build:json for the same reason as sprites: it wipes dist.
+      - run: npm run build:fonts
       # Gate the release on data reality: fails if a style keys on a field absent from the live
       # GeoParquet (value/case drift only warns). Catches "builds clean but draws nothing".
       - run: npm run validate
@@ -63,6 +65,9 @@ jobs:
           gsutil -m rsync -r -d dist-json/ gs://${GCS_BUCKET}/${GCS_PREFIX}/
           gsutil -m setmeta -h "Cache-Control:public, max-age=300" \
             "gs://${GCS_BUCKET}/${GCS_PREFIX}/**/*.json"
+          # Immutable per stack+range: a font change is a new stack name, not new bytes.
+          gsutil -m setmeta -h "Cache-Control:public, max-age=31536000, immutable" \
+            "gs://${GCS_BUCKET}/${GCS_PREFIX}/fonts/**/*.pbf"
 
       # Rebind STAC renders to the just-published styles. `--wait` surfaces the result in this
       # run; the job re-fetches the manifest and rewrites only the items whose renders changed

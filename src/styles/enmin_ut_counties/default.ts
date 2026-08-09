@@ -34,7 +34,7 @@ const layers: StyleLayer[] = [
         "layout": {
             "text-field": "{name}",
             "text-font": [
-                "Arial"
+                "Noto Sans Regular"
             ],
             "text-size": 9,
             "symbol-placement": "point"

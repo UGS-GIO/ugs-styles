@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build:json": "tsx scripts/build-json.ts",
+    "build:fonts": "tsx scripts/fetch-fonts.ts",
     "watch": "tsx watch scripts/build-json.ts",
     "coverage": "tsx scripts/coverage.ts",
     "validate": "tsx scripts/validate.ts",

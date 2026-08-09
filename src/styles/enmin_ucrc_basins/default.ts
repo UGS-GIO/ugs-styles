@@ -71,7 +71,7 @@ const layers: StyleLayer[] = [
         type: 'symbol',
         layout: {
             'text-field': displayLabel,
-            'text-font': ['Arial'],
+            'text-font': ['Noto Sans Regular'],
             'text-size': 12,
             // The layer is outlines (MultiLineString), not polygons — there's no interior for a
             // centred label and GL can't compute a centroid, so the name rides the boundary. A
