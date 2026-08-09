@@ -74,7 +74,7 @@ function getField(node: Json | undefined): { field: string; ci: boolean } | null
 async function main() {
   // Load each style module's spec (+ bespoke layers), like build-json.
   type Style = { itemId: string; render: string; field?: string; paletteKeys?: string[];
-    layers?: Record<string, Json>[]; kind: string };
+    layers?: Record<string, Json>[]; kind: string; pending?: string };
   const styles: Style[] = [];
   for (const layer of await readdir(STYLES_DIR, { withFileTypes: true })) {
     if (!layer.isDirectory()) continue;
@@ -85,7 +85,7 @@ async function main() {
       const pal = spec.palette ? PALETTES[spec.palette] : undefined;
       styles.push({
         itemId: spec.itemId, render: spec.render ?? f.replace(/\.ts$/, ''),
-        kind: spec.kind ?? 'vector', field: spec.field,
+        kind: spec.kind ?? 'vector', field: spec.field, pending: spec.pending,
         paletteKeys: pal ? Object.keys(pal.fill) : undefined,
         layers: mod.default ?? mod.layers,
       });
@@ -134,7 +134,19 @@ async function main() {
 
     const distinct = new Map<string, Set<string>>();
     for (const f of fields) {
-      if (!cols.includes(f)) { console.log(`✗ ${itemId}: field '${f}' not in data (cols: ${cols.length})`); errors++; continue; }
+      if (!cols.includes(f)) {
+        // A pre-staged style keys on columns the ingest hasn't shipped yet (`spec.pending`). That's
+        // the point of pre-staging, so it warns — but loudly, and it still blocks under --strict.
+        const pending = group.find((s) => s.pending)?.pending;
+        if (pending) {
+          console.log(`  ! ${itemId}: field '${f}' not in data yet — pre-staged (${pending})`);
+          warnings++;
+        } else {
+          console.log(`✗ ${itemId}: field '${f}' not in data (cols: ${cols.length})`);
+          errors++;
+        }
+        continue;
+      }
       distinct.set(f, new Set(rows.map((r) => String(r[f]))));
     }
 
