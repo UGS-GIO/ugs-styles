@@ -13,7 +13,7 @@
  */
 import { UCRC_PURPOSE_FILL, UCRC_PURPOSE_STROKE } from './ucrc-purpose';
 
-/** Sprite-name prefix shared by the generator (scripts/gen-triangle-sprites.ts) and the render. */
+/** Sprite-name prefix shared by the sprite recipe (baked via scripts/gen-sprites.ts) and the render. */
 export const NPWC_PURPOSE_NAMESPACE = 'npwc-purpose';
 
 // The closed set of NPWC purpose codes (UGS_Core_Center_Purpose lookup, 12 rows).
@@ -68,14 +68,14 @@ export const npwcStroke = (code: string): string =>
     UCRC_PURPOSE_STROKE[CODE_TO_UCRC_LABEL[code] ?? ''] ?? NPWC_PURPOSE_OTHER_STROKE;
 
 // A blank/missing `purpose` is a real class in the data, not an error, so it renders as Unknown
-// rather than silently vanishing. The render coalesces '' → this code; the generator always bakes
-// its frame so the stand-in exists even when the current extract has no blank/`U` wells.
+// rather than silently vanishing. It's included in NPWC_PRESENT_CODES below, so its frame is always
+// baked, and the render's icon-image match falls back to it for blank/missing/unlisted values.
 export const NPWC_BLANK_CODE = 'U';
 
-// The codes actually present in enmin_non_petroleum_wells.purpose, in legend order (meaningful
-// classes by count, Unknown last). Verified against the live serving table 2026-08-13:
-// C 2355, SH 99, T 17, W 1, U 1. The render legends THIS list. The generator re-reads the live data
-// on every publish and bakes a frame per code it finds (+ the Unknown stand-in), so a code the
-// ingest adds later is picked up and colored on the NEXT publish — until then it has no baked frame
-// and its wells don't draw (static-CDN sprites don't self-heal between publishes).
+// The single declared list of codes this layer symbolizes, in legend order (meaningful classes by
+// count, Unknown last). The by-purpose render reads it three ways — the sprite bake, the icon-image
+// match, and the legend — so they cannot drift, and the sheet is a function of the commit (not live
+// data). Verified present in the live serving table 2026-08-13: C 2355, SH 99, T 17, W 1, U 1.
+// Extending the layer to another of the 12 NPWC codes is a one-line edit here (its color + label are
+// already defined above); a value NOT listed here falls to the Unknown frame at render time.
 export const NPWC_PRESENT_CODES: readonly NpwcCode[] = ['C', 'SH', 'T', 'W', 'U'];
