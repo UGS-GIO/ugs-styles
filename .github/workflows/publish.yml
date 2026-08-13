@@ -39,6 +39,9 @@ jobs:
       # Bake pie-wedge sprite sheets (UCRC wells by-boxtype) from the live GeoParquet → dist-json,
       # so the icon render publishes with its sprites. Must run after build:json (which wipes dist).
       - run: npm run gen:sprites
+      # Bake triangle sprite sheets (non-petroleum wells by-purpose) from the live GeoParquet →
+      # dist-json — same reason/placement as the pie-wedge sprites above (after build:json wipes dist).
+      - run: npm run gen:triangle-sprites
       # Glyphs for the label renders. After build:json for the same reason as sprites: it wipes dist.
       - run: npm run build:fonts
       # Gate the release on data reality: fails if a style keys on a field absent from the live

@@ -12,10 +12,11 @@
     "validate": "tsx scripts/validate.ts",
     "seed:sld": "npx --yes esbuild scripts/sld-to-gl.ts --bundle --platform=node --format=cjs --outfile=node_modules/.cache/sld-to-gl.cjs --log-level=error && node node_modules/.cache/sld-to-gl.cjs",
     "typecheck": "tsc --noEmit",
-    "preview": "npm run build:json && npm run gen:sprites && npx --yes http-server -p 8080 -c-1 -o /preview/",
+    "preview": "npm run build:json && npm run gen:sprites && npm run gen:triangle-sprites && npx --yes http-server -p 8080 -c-1 -o /preview/",
     "dev": "npm run build:json && npx --yes concurrently -k -n watch,serve \"tsx watch scripts/build-json.ts\" \"npx --yes http-server -p 8080 -c-1 -o /preview/\"",
     "qa": "npm run build:json && npx --yes http-server -p 8080 -d false -c-1",
     "gen:sprites": "tsx scripts/gen-pie-sprites.ts",
+    "gen:triangle-sprites": "tsx scripts/gen-triangle-sprites.ts",
     "lint": "eslint .",
     "gen:boxtype-membership": "tsx scripts/gen-boxtype-membership.ts"
   },

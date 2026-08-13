@@ -8,3 +8,6 @@ dist-pmtiles
 
 # Playwright MCP session artifacts
 .playwright-mcp/
+
+# Agent worktrees
+.claude/worktrees/
