@@ -3,8 +3,8 @@
  * ugs-map-viewer subsurface layer: each well's icon is a disc split into colored wedges for the
  * box-type GROUPS it holds — Core / Cuttings / Other, three colors, so a disc is at most 3 slices
  * no matter how many specific types the well carries. `box_type_codes` is multi-value, so it can't
- * be a single fill — the icons (pre-baked into a sprite sheet by scripts/gen-pie-sprites.ts) carry
- * the composite. icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
+ * be a single fill — the icons (pre-baked into a sprite sheet by scripts/gen-sprites.ts, from the
+ * `sprite` recipe below) carry the composite. icon-image = `box-type-<the well's exact codes>`.
  *
  * The `sprite` field tells consumers which sprite sheet to load (the base map style's own sprite
  * doesn't carry these). The warehouse passes it into the STAC render block; the viewer
@@ -14,7 +14,8 @@ import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { interpolateByZoom } from '../../expressions/categorical';
 import type { UcrcBoxGroup } from '../../palettes/ucrc-boxtype';
-import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES, groupValues } from '../../palettes/ucrc-boxtype';
+import { UCRC_CORE_CODES, UCRC_BOX_GROUP_COLORS, UCRC_BOX_GROUP_ORDER, UCRC_BOX_TYPE_NAMESPACE, UCRC_BOX_NO_CODES, groupValues, boxTypeGroup } from '../../palettes/ucrc-boxtype';
+import type { SpriteRecipe } from '../../sprites';
 
 const GROUP_LABELS: Record<UcrcBoxGroup, string> = { CORE: 'Core', CUTTINGS: 'Cuttings', OTHER: 'Other' };
 
@@ -32,6 +33,33 @@ export const spec = {
     // group, so consumers should draw one swatch per group, not one per value.
     legend: UCRC_BOX_GROUP_ORDER.map((g) => ({ label: GROUP_LABELS[g], color: UCRC_BOX_GROUP_COLORS[g], values: groupValues(g) })),
 } satisfies Binding & { render: string; field: string; sprite: string; legend: { label: string; color: string; values: { value: string; color: string; label: string }[] }[] };
+
+// The wedge colors for one combo, in fixed group order — every combo touching the same GROUP set
+// draws the same disc (so ≤ 7 distinct discs however many combos exist).
+const wedgesOf = (combo: string): { key: string; colors: string[] } => {
+    const hit = new Set(combo.split(',').map((s) => s.trim()).filter(Boolean).map(boxTypeGroup));
+    const groups: UcrcBoxGroup[] = UCRC_BOX_GROUP_ORDER.filter((g) => hit.has(g));
+    return { key: groups.join('+'), colors: groups.map((g) => UCRC_BOX_GROUP_COLORS[g]) };
+};
+
+// Sprite recipe (baked by scripts/gen-sprites.ts). `box_type_codes` is an open, combinatorial domain,
+// so the frame values are read from the live GeoParquet; combos are deduped to one disc per group-set,
+// and the no-codes stand-in is always baked so a code-less well still draws.
+export const sprite: SpriteRecipe = {
+    shape: 'pie',
+    values: { field: 'box_type_codes' },
+    cells: (combos) => {
+        const byKey = new Map<string, { names: string[]; wedges: string[] }>();
+        for (const combo of [...new Set([...combos, UCRC_BOX_NO_CODES])].sort()) {
+            const { key, colors } = wedgesOf(combo);
+            const name = `${UCRC_BOX_TYPE_NAMESPACE}-${combo}`;
+            const existing = byKey.get(key);
+            if (existing) existing.names.push(name);
+            else byKey.set(key, { names: [name], wedges: colors });
+        }
+        return [...byKey.values()];
+    },
+};
 
 // A code-less well still has to draw: blank/missing codes resolve to the stand-in no-codes disc
 // rather than to `box-type-` (no such sprite → invisible well). Distinct from the managed
