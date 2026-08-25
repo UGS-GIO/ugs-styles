@@ -97,6 +97,19 @@ const GEOLUNITS_FILL: Record<string, string> = {
     'P': '#377EB8',
 };
 
+// Wetland Plants EcoRegional Groups — EPA Omernik Level III ecoregions occurring in Utah
+// (`us_l3name`). A fixed federal enumeration, not project-specific, so it's safe to hard-list
+// rather than derive from a 7-row layer.
+const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
+    'Central Basin and Range': '#FDB863',
+    'Colorado Plateaus': '#E66101',
+    'Northern Basin and Range': '#B2ABD2',
+    'Southern Rockies': '#5E3C99',
+    'Wasatch and Uinta Mountains': '#1B9E77',
+    'Wyoming Basin': '#66C2A5',
+    'Mojave Basin and Range': '#A6D96A',
+};
+
 export const PALETTES: Record<string, Palette> = {
     'ucrc-purpose': { fill: UCRC_PURPOSE_FILL, stroke: UCRC_PURPOSE_STROKE, other: '#BDBDBD' },
     // Same colors, scoped to the older wells_spatial vocabulary — see ucrc-purpose.ts.
@@ -110,6 +123,7 @@ export const PALETTES: Record<string, Palette> = {
     'transmission': { fill: TRANSMISSION_FILL, other: '#888888' },
     'basins': { fill: BASINS_FILL, other: '#D3D3D3' },
     'geolunits': { fill: GEOLUNITS_FILL, other: '#E5D8BD' },
+    'wetland-ecoregions': { fill: WETLAND_ECOREGIONS_FILL, other: '#CCCCCC' },
 };
 
 // Sequential ramps for `graduated` — ordered low -> high, one stop per class.
