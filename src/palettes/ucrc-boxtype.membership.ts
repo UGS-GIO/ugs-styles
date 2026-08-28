@@ -5,6 +5,7 @@
 // shade order are NOT here — those live in ucrc-boxtype.ts (ugs-styles owns style).
 export const UCRC_BOX_MEMBERSHIP: readonly { code: string; group: string }[] = [
     { code: "BUTTS", group: "CORE" },
+    { code: "CORE", group: "CORE" },
     { code: "CORE CHIPS", group: "CUTTINGS" },
     { code: "CORESAMPLES", group: "CORE" },
     { code: "CUTTINGS", group: "CUTTINGS" },
@@ -14,7 +15,6 @@ export const UCRC_BOX_MEMBERSHIP: readonly { code: string; group: string }[] = [
     { code: "SIDEWALL PLUGS", group: "OTHER" },
     { code: "SKELETONIZED CORE", group: "CORE" },
     { code: "SLABS", group: "CORE" },
-    { code: "SPOT CORES", group: "CORE" },
     { code: "THIN SECTIONS", group: "OTHER" },
     { code: "UNKNOWN", group: "OTHER" },
     { code: "WHOLE CORE", group: "CORE" },
