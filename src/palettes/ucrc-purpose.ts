@@ -91,6 +91,8 @@ export const UCRC_WELLS_PURPOSE_LABELS = [
 
 // The older `wells_spatial` copy of the same wells, which kept the pre-rename vocabulary.
 // Scoped so a style on that layer doesn't legend (or get validated against) UCRC-only names.
+// No 'Other' here: unlike enmin_ucrc_wells, this layer stores no such purpose, so legending it
+// puts up a swatch that draws nothing. The palette's `other` color is still the paint fallback.
 export const WELLS_SPATIAL_PURPOSE_LABELS = [
     'Oil and Gas',
     'Mining',
@@ -105,5 +107,4 @@ export const WELLS_SPATIAL_PURPOSE_LABELS = [
     'Teaching',
     'Display',
     'Unknown',
-    'Other',
 ];
