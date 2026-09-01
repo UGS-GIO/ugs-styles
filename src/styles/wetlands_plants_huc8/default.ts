@@ -1,9 +1,3 @@
-/**
- * Watershed (HUC8) Boundaries — supplementary boundary polygons for Wetland Survey Sites (old
- * app: https://wetlandplants.geology.utah.gov/). Open polygons, blue outline only — no fill,
- * same as the old app's fillSymbol. Darker than the old app's raw rgb(0,128,255) for better
- * contrast against the basemap.
- */
 import type { Binding } from '../../types';
 
 export const spec = {
