@@ -8,6 +8,9 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "energy_minerals_plss_sections_style",
+    legend: [
+        { label: 'PLSS Sections', color: '#000000', stroke: '#000000' },
+    ],
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.

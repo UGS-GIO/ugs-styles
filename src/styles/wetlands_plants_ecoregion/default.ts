@@ -14,4 +14,13 @@ export const spec = {
     archetype: 'categorical',
     field: 'us_l3name',
     palette: 'wetland-ecoregions',
+    legend: [
+        { label: 'Central Basin and Range', color: '#FDB863' },
+        { label: 'Colorado Plateaus', color: '#E66101' },
+        { label: 'Mojave Basin and Range', color: '#A6D96A' },
+        { label: 'Northern Basin and Range', color: '#B2ABD2' },
+        { label: 'Southern Rockies', color: '#5E3C99' },
+        { label: 'Wasatch and Uinta Mountains', color: '#1B9E77' },
+        { label: 'Wyoming Basin', color: '#66C2A5' },
+    ],
 } satisfies Binding & { render: string; archetype: 'categorical'; field: string; palette: string };
