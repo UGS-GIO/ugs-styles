@@ -9,4 +9,7 @@ export const spec = {
     archetype: 'simple',
     geom: 'line',
     color: '#0056B3',
+    legend: [
+        { label: 'Watershed (HUC8) Boundaries', color: '#0056B3', stroke: '#0056B3' },
+    ],
 } satisfies Binding & { render: string; archetype: 'simple'; geom: string; color: string };

@@ -8,6 +8,9 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "hazards_qfaults_test_style",
+    legend: [
+        { label: 'Quaternary Faults', color: '#e60000', stroke: '#e60000' },
+    ],
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
