@@ -45,7 +45,7 @@ export const spec = {
     // Legend = the source of truth for this render's symbology. Labels are the DISPLAY names —
     // what the map actually draws. Two basins, two entries; the grey else-branch is not one.
     legend: Object.entries(BASIN_COLORS).map(([label, c]) => ({ label, color: c })),
-} satisfies Binding & { render: string; field: string; legend: { label: string; color: string }[] };
+} satisfies Binding & { render: string; field: string };
 
 const layers: StyleLayer[] = [
     {
