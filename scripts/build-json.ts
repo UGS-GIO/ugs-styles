@@ -14,6 +14,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { generate } from '../src/archetypes';
 import { FONTSTACKS, GLYPHS_PATH } from '../src/fonts';
 import { auditDraw, type GLLayer, normalizeFills } from '../src/layers';
+import type { LegendEntry } from '../src/types';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -41,7 +42,7 @@ type ManifestEntry = {
     // Explicit legend: the render's symbology. `values` (grouped renders) = the specific field
     // values an entry rolls up, each with its own shade; `stroke` = optional swatch outline (flat
     // renders). Consumers derive colors from here verbatim.
-    legend?: { label: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
+    legend?: LegendEntry[];
     field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
 };
 
