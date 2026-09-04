@@ -1,0 +1,29 @@
+# Same checks publish.yml runs, so a style that cannot compile is caught in review, not at release.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build:json
+      - run: npm run gen:sprites
+      # Reads the live GeoParquet: field drift fails, value/case drift warns.
+      - run: npm run validate

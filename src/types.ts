@@ -4,6 +4,17 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 
 export type StyleLayer = DistributiveOmit<LayerSpecification, 'source'>;
 
+/**
+ * One legend swatch, read verbatim by consumers. `values` = the field values an entry rolls up,
+ * each with its own shade; `stroke` = optional swatch outline.
+ */
+export type LegendEntry = {
+    label: string;
+    color: string;
+    values?: readonly { value: string; color: string }[];
+    stroke?: string;
+};
+
 // How a style render binds to a warehouse layer. The warehouse joins on `itemId` (the STAC
 // item id it mints — a serving topic's `{layer}` stem, or a pub `series_id`), reads `kind`
 // to pick the render shape, and attaches the style only to items carrying one of `assets`.
@@ -14,6 +25,8 @@ export type Binding = {
     kind: 'vector' | 'raster';
     assets: string[];                // STAC asset keys this render targets: ['pmtiles'] | ['cog']
     title?: string;                  // human label for the render
+    // build-json copies this into dist-json/index.json for every render shape.
+    legend?: LegendEntry[];
     // raster-only render params (passed through to the STAC render extension):
     colormap_name?: string;
     rescale?: [number, number];
