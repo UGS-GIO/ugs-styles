@@ -11,3 +11,6 @@ dist-pmtiles
 
 # Agent worktrees
 .claude/worktrees/
+
+# Personal permission overrides
+.claude/settings.local.json
