@@ -1,7 +1,4 @@
-# Gate every PR on the same checks publish.yml runs, so a style that cannot compile is caught in
-# review instead of at release. v0.1.34 was tagged with four styles that failed `tsc` — the tag's
-# publish died before the GCS sync, so the CDN silently kept serving the previous manifest and the
-# new legends never reached the map. Nothing ran typecheck until then; this is that missing gate.
+# Same checks publish.yml runs, so a style that cannot compile is caught in review, not at release.
 name: CI
 
 on:
@@ -28,6 +25,5 @@ jobs:
       - run: npm run lint
       - run: npm run build:json
       - run: npm run gen:sprites
-      # `validate` reads the live GeoParquet. Field drift fails, value/case drift warns — same
-      # contract as the release gate, so a PR cannot merge a style that keys on a dead column.
+      # Reads the live GeoParquet: field drift fails, value/case drift warns.
       - run: npm run validate

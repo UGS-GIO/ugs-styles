@@ -5,9 +5,8 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 export type StyleLayer = DistributiveOmit<LayerSpecification, 'source'>;
 
 /**
- * One legend swatch — the render's symbology, read verbatim by consumers.
- * `values` (grouped renders) = the specific field values an entry rolls up, each with its own
- * shade; `stroke` = optional swatch outline for flat renders.
+ * One legend swatch, read verbatim by consumers. `values` = the field values an entry rolls up,
+ * each with its own shade; `stroke` = optional swatch outline.
  */
 export type LegendEntry = {
     label: string;
@@ -26,10 +25,7 @@ export type Binding = {
     kind: 'vector' | 'raster';
     assets: string[];                // STAC asset keys this render targets: ['pmtiles'] | ['cog']
     title?: string;                  // human label for the render
-    // The render's legend. Lives on Binding because build-json copies it straight into
-    // dist-json/index.json for every render shape — spec-authored and hand-authored alike.
-    // Without it here the `satisfies` excess-property check rejects `legend:` at authoring time
-    // (this is what broke the v0.1.34 publish), so every style had to re-declare it by hand.
+    // build-json copies this into dist-json/index.json for every render shape.
     legend?: LegendEntry[];
     // raster-only render params (passed through to the STAC render extension):
     colormap_name?: string;
