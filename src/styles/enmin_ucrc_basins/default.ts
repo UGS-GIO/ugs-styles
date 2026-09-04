@@ -52,8 +52,7 @@ const layers: StyleLayer[] = [
             'text-field': displayLabel,
             'text-font': ['Noto Sans Regular'],
             'text-size': 12,
-            // The features are polygons, so 'point' gets an interior anchor per basin. 'line'
-            // strings the name along the ring and drops it where the ring is dense.
+            // Polygons: 'point' places each name at its basin's interior anchor.
             'symbol-placement': 'point',
             // Two anchors, far apart — nothing to declutter, and the basemap can't evict a name.
             'text-allow-overlap': true,
