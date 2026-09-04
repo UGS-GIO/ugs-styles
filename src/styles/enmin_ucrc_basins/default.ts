@@ -5,8 +5,8 @@
  *
  * Verified against live WFS/GetStyles: the layer holds exactly two MultiPolygon features, spelled
  * "Paradox Basin" and "Uinta Basin", and the SLD draws them with a 2px LineSymbolizer plus a
- * PointPlacement TextSymbolizer. We add a translucent fill on top of that: the SLD's outline-only
- * treatment left the basins un-hittable and hard to read as areas on a busy basemap.
+ * PointPlacement TextSymbolizer — no PolygonSymbolizer at all. The interiors stay transparent
+ * here for the same reason: these are regional extents drawn over the wells and boxes inside them.
  */
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
@@ -48,16 +48,6 @@ export const spec = {
 } satisfies Binding & { render: string; field: string };
 
 const layers: StyleLayer[] = [
-    {
-        // Kept light: these are regional extents drawn over the wells/boxes they contain, so the
-        // fill has to read as a wash, not as a layer that hides what sits inside it.
-        id: 'enmin_ucrc_basins-fill',
-        type: 'fill',
-        paint: {
-            'fill-color': color,
-            'fill-opacity': 0.12,
-        },
-    },
     {
         id: 'enmin_ucrc_basins-line',
         type: 'line',
