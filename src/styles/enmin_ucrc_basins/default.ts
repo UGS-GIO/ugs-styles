@@ -1,22 +1,14 @@
 /**
- * UCRC basins — colored boundary + name per basin. Seeded from GeoServer
- * (energy_mineral:enmin_ucrc_basins_current); GeoServer is retiring, so this module is now the
- * source of truth.
- *
- * Verified against live WFS/GetStyles: the layer holds exactly two MultiPolygon features, spelled
- * "Paradox Basin" and "Uinta Basin", and the SLD draws them with a 2px LineSymbolizer plus a
- * PointPlacement TextSymbolizer — no PolygonSymbolizer at all. The interiors stay transparent
- * here for the same reason: these are regional extents drawn over the wells and boxes inside them.
+ * UCRC basins — two MultiPolygon features, `label` "Paradox Basin" and "Uinta Basin".
+ * Outline and name only; the interiors stay transparent so the wells and boxes inside stay visible.
  */
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { matchByValue } from '../../expressions/categorical';
 
-// Stored `label` (lowercased) -> the name the map should draw. Keyed lowercase so a case change in
-// the warehouse can't silently drop a basin to the grey fallback. "complete paradox basin" is a
-// spelling the layer used to carry; kept so a rollback of that rename still colors and labels.
+// Stored `label`, lowercased -> the name to draw. Keyed lowercase so a case change in the
+// warehouse can't drop a basin to the grey fallback.
 const BASIN_LABELS: Record<string, string> = {
-    'complete paradox basin': 'Paradox Basin',
     'paradox basin': 'Paradox Basin',
     'uinta basin': 'Uinta Basin',
 };
@@ -24,8 +16,7 @@ const BASIN_COLORS: Record<string, string> = {
     'Paradox Basin': '#8400A8',
     'Uinta Basin': '#005CE6',
 };
-// Paint-time fallback for an unmapped value — the SLD's <ElseFilter/> rule. It is a safety net, not
-// a category: no feature in the layer takes it, so it is deliberately NOT a legend entry.
+// Paint fallback for an unmapped value. A safety net, not a category — deliberately not legended.
 const OTHER_COLOR = '#808080';
 
 const storedLabel: ExpressionSpecification = ['downcase', ['to-string', ['coalesce', ['get', 'label'], '']]];
@@ -42,8 +33,6 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'UCRC basins',
     field: 'label',   // the attribute this render symbolizes (consumers wire filters to it)
-    // Legend = the source of truth for this render's symbology. Labels are the DISPLAY names —
-    // what the map actually draws. Two basins, two entries; the grey else-branch is not one.
     legend: Object.entries(BASIN_COLORS).map(([label, c]) => ({ label, color: c })),
 } satisfies Binding & { render: string; field: string };
 
@@ -63,15 +52,10 @@ const layers: StyleLayer[] = [
             'text-field': displayLabel,
             'text-font': ['Noto Sans Regular'],
             'text-size': 12,
-            // 'point', NOT 'line'. The features are MultiPolygons, so GL computes an interior
-            // anchor (pole of inaccessibility) per basin and the name sits inside its own outline.
-            // The previous 'line' placement — and the symbol-spacing / text-max-angle / text-offset
-            // scaffolding that propped it up — assumed MultiLineString geometry this layer does not
-            // have; it strung repeated names along the boundary and dropped them on dense stretches.
+            // The features are polygons, so 'point' gets an interior anchor per basin. 'line'
+            // strings the name along the ring and drops it where the ring is dense.
             'symbol-placement': 'point',
-            // Both basins MUST stay named. Their anchors are far apart so there is nothing to
-            // declutter between them, but opting out of collision keeps a busy basemap from
-            // evicting one name and not the other.
+            // Two anchors, far apart — nothing to declutter, and the basemap can't evict a name.
             'text-allow-overlap': true,
             'text-ignore-placement': true,
         },
