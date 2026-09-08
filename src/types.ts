@@ -14,6 +14,7 @@ export type Binding = {
     kind: 'vector' | 'raster';
     assets: string[];                // STAC asset keys this render targets: ['pmtiles'] | ['cog']
     title?: string;                  // human label for the render
+    legend?: { label: string; color: string; stroke?: string }[];  // legend swatches: fill color + optional stroke, per label
     // raster-only render params (passed through to the STAC render extension):
     colormap_name?: string;
     rescale?: [number, number];
