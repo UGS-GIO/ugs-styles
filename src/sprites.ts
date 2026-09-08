@@ -18,13 +18,13 @@
 // plain color data the shape handler in gen-sprites reads; no geometry, no canvas here.
 export type SpriteCell = {
     names: string[];                 // icon-image names pointing at this cell
-    fill?: string;                   // `triangle`: fill + stroke
+    fill?: string;                   // `triangle`: fill + stroke · `asterisk`: arm color
     stroke?: string;
     wedges?: readonly string[];      // `pie`: ordered wedge colors (a single color = a solid disc)
 };
 
 export type SpriteRecipe = {
-    shape: 'triangle' | 'pie';
+    shape: 'triangle' | 'pie' | 'asterisk';
     // Where the frame values come from: a fixed list (output is a function of the commit —
     // reproducible, no build-time network) or the distinct values of a field read from the item's
     // live GeoParquet (for genuinely open domains, e.g. the pie's box-type combos).

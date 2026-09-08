@@ -86,9 +86,30 @@ function drawPie(ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCell, s
     ctx.stroke();
 }
 
+// Six-arm asterisk (three diameters through the center) in cell.fill, no outline — matches the karst
+// SLD's ESRI "Transportation & Civic" 0x72 marker, which sets stroke-opacity 0. Round caps give the
+// arms the same soft ends the glyph has; arms inset by the cap radius so nothing clips the cell.
+function drawAsterisk(ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCell, scale: number): void {
+    const size = SIZE * scale, arms = 6;
+    const cx = ox + size / 2, cy = oy + size / 2;
+    const lw = STROKE_W * scale * 1.6;          // arm thickness
+    const r = size / 2 - lw / 2;                // arm length, inset so the round cap stays in the cell
+    ctx.strokeStyle = cell.fill ?? '#BDBDBD';
+    ctx.lineWidth = lw;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < arms; i++) {
+        const a = (Math.PI * 2 * i) / arms - Math.PI / 2;   // first arm points up (12 o'clock)
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+        ctx.stroke();
+    }
+}
+
 const SHAPES: Record<SpriteRecipe['shape'], (ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCell, scale: number) => void> = {
     triangle: drawTriangle,
     pie: drawPie,
+    asterisk: drawAsterisk,
 };
 
 // --- packing (shared) ---------------------------------------------------------------------------
