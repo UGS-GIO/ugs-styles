@@ -22,7 +22,7 @@ export const spec = {
     render: 'by-purpose',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: 'UCRC wells by purpose',
+    title: 'UCRC boreholes by purpose',
     field: 'purpose',   // the attribute this render symbolizes (consumers wire filters to it)
     // Legend = the source of truth for this render's symbology (fill + stroke per purpose). Flat
     // (no `values`): each entry's label IS the field value. Consumers derive colors from here.

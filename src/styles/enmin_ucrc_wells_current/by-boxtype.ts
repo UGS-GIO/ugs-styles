@@ -24,7 +24,7 @@ export const spec = {
     render: 'by-boxtype',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: 'UCRC wells by sample type',
+    title: 'UCRC boreholes by sample type',
     field: 'box_type_codes',   // the attribute this render symbolizes (consumers wire filters to it)
     sprite: 'styles/enmin_ucrc_wells_current/sprite',  // relative to STYLES_CDN_BASE (no extension)
     // Explicit legend — the single source of truth for this render's symbology. Each entry is a
