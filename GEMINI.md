@@ -33,3 +33,11 @@ Cite file:line, use repo context for correctness, skip unrelated pre-existing is
 ## Publish / process
 - Merge to `master` does NOT publish — a `v0.1.x` tag ships `dist-json` to the CDN. Flag a PR whose
   description assumes "merge = live." Conventional-commit title. GCP/CDN hosts only, no other vendor.
+
+## Review scope & severity
+- Skip (don't post findings): `package-lock.json` is the only committed generated file; `dist-json/`,
+  generated sprite sheets, and glyphs are gitignored build output, so they never appear in a diff.
+- Blocking here (not a nit): merge to `master` does NOT deploy — a `v0.1.x` tag publishes `dist-json`
+  to the CDN, gated on `npm run validate`. So the blocker isn't a merge-time prod break; it's data
+  drift — a `field`, `source-layer`, or `itemId` mismatch that makes a style silently draw nothing or
+  never attach (a `validate`/`coverage` failure). Don't block on a merge that ships nothing.
