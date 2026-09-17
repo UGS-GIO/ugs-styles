@@ -5,11 +5,16 @@ permissions:
 jobs:
   d:
     runs-on: ubuntu-latest
+    env:
+      ASSOC: ${{ github.event.pull_request.author_association }}
+      ULOGIN: ${{ github.event.pull_request.user.login }}
+      UTYPE: ${{ github.event.pull_request.user.type }}
+      DRAFT: ${{ github.event.pull_request.draft }}
+      FORK: ${{ github.event.pull_request.head.repo.fork }}
     steps:
       - run: |
-          echo "assoc=[${{ github.event.pull_request.author_association }}]"
-          echo "user_login=[${{ github.event.pull_request.user.login }}]"
-          echo "user_type=[${{ github.event.pull_request.user.type }}]"
-          echo "draft=[${{ github.event.pull_request.draft }}]"
-          echo "head_fork=[${{ github.event.pull_request.head.repo.fork }}]"
-          echo "gate=[${{ (github.event.pull_request.draft == false && github.event.pull_request.head.repo.fork == false && github.event.pull_request.user.type != 'Bot' && contains(fromJSON('[\"OWNER\",\"MEMBER\",\"COLLABORATOR\"]'), github.event.pull_request.author_association)) }}]"
+          echo "assoc=[$ASSOC]"
+          echo "ulogin=[$ULOGIN]"
+          echo "utype=[$UTYPE]"
+          echo "draft=[$DRAFT]"
+          echo "fork=[$FORK]"
