@@ -1,0 +1,15 @@
+name: dbg-assoc
+on: pull_request
+permissions:
+  contents: read
+jobs:
+  d:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "assoc=[${{ github.event.pull_request.author_association }}]"
+          echo "user_login=[${{ github.event.pull_request.user.login }}]"
+          echo "user_type=[${{ github.event.pull_request.user.type }}]"
+          echo "draft=[${{ github.event.pull_request.draft }}]"
+          echo "head_fork=[${{ github.event.pull_request.head.repo.fork }}]"
+          echo "gate=[${{ (github.event.pull_request.draft == false && github.event.pull_request.head.repo.fork == false && github.event.pull_request.user.type != 'Bot' && contains(fromJSON('[\"OWNER\",\"MEMBER\",\"COLLABORATOR\"]'), github.event.pull_request.author_association)) }}]"
