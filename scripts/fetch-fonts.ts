@@ -29,7 +29,7 @@ try {
     const digest = createHash('sha256').update(bytes).digest('hex');
     if (digest !== ZIP_SHA256) throw new Error(`glyph archive digest ${digest} != pinned ${ZIP_SHA256}`);
     writeFileSync(zip, bytes);
-    execFileSync('unzip', ['-q', zip, '-d', OUT]);
+    execFileSync('unzip', ['-qo', zip, '-d', OUT]);
 
     const get = async (path: string) => {
         const r = await fetch(`${ASSETS}/${encodeURI(path)}`);
@@ -37,14 +37,18 @@ try {
         return new Uint8Array(await r.arrayBuffer());
     };
     const ranges = Array.from({ length: 256 }, (_, i) => `${i * 256}-${i * 256 + 255}.pbf`);
-    const medium = await Promise.all(ranges.map(async (r) => [r, await get(`Noto Sans Medium/${r}`)] as const));
+    const medium: (readonly [string, Uint8Array])[] = [];
+    for (let i = 0; i < ranges.length; i += 16) {    // batched: 256 at once gets throttled
+        medium.push(...await Promise.all(ranges.slice(i, i + 16)
+            .map(async (r) => [r, await get(`Noto Sans Medium/${r}`)] as const)));
+    }
     const ofl = await get('OFL.txt');
     const hash = createHash('sha256');
     for (const [, b] of medium) hash.update(b);
     hash.update(ofl);
     const assetsDigest = hash.digest('hex');
     if (assetsDigest !== ASSETS_SHA256) throw new Error(`Medium glyphs digest ${assetsDigest} != pinned ${ASSETS_SHA256}`);
-    mkdirSync(join(OUT, 'Noto Sans Medium'));
+    mkdirSync(join(OUT, 'Noto Sans Medium'), { recursive: true });
     for (const [r, b] of medium) writeFileSync(join(OUT, 'Noto Sans Medium', r), b);
     writeFileSync(join(OUT, 'OFL.txt'), ofl);   // every stack here is Noto Sans, SIL OFL 1.1
 
