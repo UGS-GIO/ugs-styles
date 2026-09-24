@@ -6,6 +6,7 @@ export const FONTSTACKS = [
     'Noto Sans Regular',
     'Noto Sans Bold',
     'Noto Sans Italic',
+    'Noto Sans Medium',
 ] as const;
 
 export type Fontstack = (typeof FONTSTACKS)[number];
