@@ -23,9 +23,10 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Wetland survey sites',
     field: 'privacystatus',   // the attribute this render symbolizes (consumers wire filters to it)
+    // Flat legend: label IS the field value (Shared / Confidential) so consumers can join swatch -> feature.
     legend: [
-        { label: 'Exact location', color: EXACT_FILL, stroke: EXACT_STROKE },
-        { label: 'Confidential (approximate)', color: CONFIDENTIAL_FILL, stroke: CONFIDENTIAL_STROKE },
+        { label: 'Shared', color: EXACT_FILL, stroke: EXACT_STROKE },
+        { label: 'Confidential', color: CONFIDENTIAL_FILL, stroke: CONFIDENTIAL_STROKE },
     ],
 } satisfies Binding & {
     render: string;
