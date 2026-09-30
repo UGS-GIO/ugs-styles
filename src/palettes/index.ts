@@ -110,6 +110,25 @@ const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
     'Mojave Basin and Range': '#A6D96A',
 };
 
+// Wetlands (non-riverine) by wetland_type — matches legacy app colors
+const WETLANDS_TYPE_FILL: Record<string, string> = {
+    'Freshwater Emergent Wetland': '#B4D79E',
+    'Freshwater Forested/Shrub Wetland': '#FFD37F',
+    'Freshwater Pond': '#BEE8FF',
+    'Lake': '#73B2FF',
+    'Other': '#D0D0D0',
+};
+
+// Wetlands Project Metadata by decade — matches legacy app colors
+const WETLANDS_DECADE_FILL: Record<string, string> = {
+    '1980s': '#C2523C',
+    '1990s': '#F7DB07',
+    '2000s': '#0EC445',
+    '2010s': '#0B2C7A',
+    '2020s': '#9900FF',
+    'Unknown': '#CCCCCC',
+};
+
 export const PALETTES: Record<string, Palette> = {
     'ucrc-purpose': { fill: UCRC_PURPOSE_FILL, stroke: UCRC_PURPOSE_STROKE, other: '#BDBDBD' },
     // Same colors, scoped to the older wells_spatial vocabulary — see ucrc-purpose.ts.
@@ -124,6 +143,8 @@ export const PALETTES: Record<string, Palette> = {
     'basins': { fill: BASINS_FILL, other: '#D3D3D3' },
     'geolunits': { fill: GEOLUNITS_FILL, other: '#E5D8BD' },
     'wetland-ecoregions': { fill: WETLAND_ECOREGIONS_FILL, other: '#CCCCCC' },
+    'wetlands-type': { fill: WETLANDS_TYPE_FILL, other: '#D0D0D0' },
+    'wetlands-decade': { fill: WETLANDS_DECADE_FILL, other: '#CCCCCC' },
 };
 
 // Sequential ramps for `graduated` — ordered low -> high, one stop per class.
