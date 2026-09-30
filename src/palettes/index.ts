@@ -111,23 +111,23 @@ const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
 };
 
 // Wetlands (non-riverine) by wetland_type — matches legacy app colors
-const WETLANDS_TYPE_FILL: Record<string, string> = {
+export const WETLANDS_TYPE_FILL = {
     'Freshwater Emergent Wetland': '#B4D79E',
     'Freshwater Forested/Shrub Wetland': '#FFD37F',
     'Freshwater Pond': '#BEE8FF',
     'Lake': '#73B2FF',
     'Other': '#D0D0D0',
-};
+} as const;
 
 // Wetlands Project Metadata by decade — matches legacy app colors
-const WETLANDS_DECADE_FILL: Record<string, string> = {
+export const WETLANDS_DECADE_FILL = {
     '1980s': '#C2523C',
     '1990s': '#F7DB07',
     '2000s': '#0EC445',
     '2010s': '#0B2C7A',
     '2020s': '#9900FF',
     'Unknown': '#CCCCCC',
-};
+} as const;
 
 export const PALETTES: Record<string, Palette> = {
     'ucrc-purpose': { fill: UCRC_PURPOSE_FILL, stroke: UCRC_PURPOSE_STROKE, other: '#BDBDBD' },

@@ -1,5 +1,7 @@
 import type { Binding, StyleSpec } from '../../types';
 
+const color = '#016100';
+
 export const spec = {
     itemId: 'wetlands_riverine',
     render: 'default',
@@ -8,8 +10,8 @@ export const spec = {
     title: 'Riverine',
     archetype: 'simple',
     geom: 'fill',
-    color: '#016100',
+    color,
     legend: [
-        { label: 'Riverine', color: '#016100' },
+        { label: 'Riverine', color },
     ],
 } satisfies StyleSpec & Binding;
