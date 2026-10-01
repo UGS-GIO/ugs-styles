@@ -1,3 +1,8 @@
+/**
+ * LLWW Descriptions — compound classification combining `landform_waterbody` and `hgm_class`.
+ * Uses the handwritten StyleLayer[] escape hatch because categorization requires compound logic
+ * across two distinct fields matching the legacy app's symbology (ALL-6056).
+ */
 import type { ExpressionSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 import { WETLANDS_LLWW_FILL } from '../../palettes';
@@ -72,6 +77,7 @@ const layers: StyleLayer[] = [
     {
         id: 'wetlands_llww_descriptions-fill',
         type: 'fill',
+        'source-layer': 'wetlands_llww_descriptions',
         paint: {
             'fill-color': [
                 'case',
