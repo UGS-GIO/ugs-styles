@@ -128,5 +128,5 @@ function simple(spec: StyleSpec): StyleLayer[] {
     const geom = spec.geom ?? 'fill';
     if (geom === 'line') return [{ id: `${spec.itemId}-line`, type: 'line', paint: { 'line-color': c, 'line-width': 1.2 } }];
     if (geom === 'circle') return [{ id: `${spec.itemId}-circle`, type: 'circle', paint: { 'circle-color': c, 'circle-radius': 3 } }];
-    return [{ id: `${spec.itemId}-fill`, type: 'fill', paint: { 'fill-color': c, 'fill-opacity': 0.4 } }];
+    return [{ id: `${spec.itemId}-fill`, type: 'fill', paint: { 'fill-color': c, 'fill-opacity': spec.opacity ?? 0.4 } }];
 }

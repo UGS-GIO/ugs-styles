@@ -100,7 +100,7 @@ const GEOLUNITS_FILL: Record<string, string> = {
 // Wetland Plants EcoRegional Groups — EPA Omernik Level III ecoregions occurring in Utah
 // (`us_l3name`). A fixed federal enumeration, not project-specific, so it's safe to hard-list
 // rather than derive from a 7-row layer.
-const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
+export const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
     'Central Basin and Range': '#FDB863',
     'Colorado Plateaus': '#E66101',
     'Northern Basin and Range': '#B2ABD2',
@@ -108,6 +108,15 @@ const WETLAND_ECOREGIONS_FILL: Record<string, string> = {
     'Wasatch and Uinta Mountains': '#1B9E77',
     'Wyoming Basin': '#66C2A5',
     'Mojave Basin and Range': '#A6D96A',
+};
+
+// All EPA Omernik Level III ecoregions in Utah, including boundary-edge regions
+export const WETLANDS_ECOREGIONS_ALL_FILL: Record<string, string> = {
+    ...WETLAND_ECOREGIONS_FILL,
+    'Arizona/New Mexico Plateau': '#CAB2D6',
+    'Middle Rockies': '#B15928',
+    'Arizona/New Mexico Mountains': '#FB9A99',
+    'Snake River Plain': '#E7298A',
 };
 
 // Wetlands (non-riverine) by wetland_type — matches legacy app colors
@@ -129,6 +138,46 @@ export const WETLANDS_DECADE_FILL = {
     'Unknown': '#CCCCCC',
 } as const;
 
+// Wetland Assessment Projects — matches legacy app colors
+export const WETLANDS_ASSESSMENT_PROJECTS_FILL = {
+    'Bear River URAP': '#E41A1C',
+    'Jordan URAP': '#377EB8',
+    'Uinta 2014': '#4DAF4A',
+    'Weber URAP': '#984EA3',
+    'GSL URAP': '#FFFF33',
+    'SV URAP': '#F0027F',
+    'Central Basin': '#A65628',
+} as const;
+
+// Wetland Assessment Study Results by project — matches legacy app colors
+export const WETLANDS_STUDY_RESULTS_FILL = {
+    'Bear River URAP': '#99233D',
+    'Uinta 2014': '#3CA5BA',
+    'Jordan URAP': '#4031C4',
+    'Weber URAP': '#B08F2E',
+    'Central Basin': '#3FC93C',
+} as const;
+
+// Wetland LLWW Descriptions — matches legacy app colors
+export const WETLANDS_LLWW_FILL = {
+    'Rivers, Streams, Canals': '#002673',
+    'Lakes and Ponds': '#00C3FF',
+    'Riverine Wetland': '#00A884',
+    'Lacustrine Fringe Wetland': '#DE73FF',
+    'Slope Wetland': '#FFFF73',
+    'Depressional Wetland': '#E69900',
+    'Riparian': '#A87000',
+    'Flats Wetland': '#FFECBE',
+} as const;
+
+// Wetland Stressors ramp: None (0), Low (1), Moderate (2), High (3)
+export const WETLANDS_STRESSORS_RAMP = [
+    '#0070FF',
+    '#3AFF00',
+    '#FFAA00',
+    '#FF0000',
+] as const;
+
 export const PALETTES: Record<string, Palette> = {
     'ucrc-purpose': { fill: UCRC_PURPOSE_FILL, stroke: UCRC_PURPOSE_STROKE, other: '#BDBDBD' },
     // Same colors, scoped to the older wells_spatial vocabulary — see ucrc-purpose.ts.
@@ -143,12 +192,16 @@ export const PALETTES: Record<string, Palette> = {
     'basins': { fill: BASINS_FILL, other: '#D3D3D3' },
     'geolunits': { fill: GEOLUNITS_FILL, other: '#E5D8BD' },
     'wetland-ecoregions': { fill: WETLAND_ECOREGIONS_FILL, other: '#CCCCCC' },
+    'wetlands-ecoregions': { fill: WETLANDS_ECOREGIONS_ALL_FILL, other: '#CCCCCC' },
     'wetlands-type': { fill: WETLANDS_TYPE_FILL, other: '#D0D0D0' },
     'wetlands-decade': { fill: WETLANDS_DECADE_FILL, other: '#CCCCCC' },
+    'wetlands-assessment-projects': { fill: WETLANDS_ASSESSMENT_PROJECTS_FILL, other: '#BDBDBD' },
+    'wetlands-study-results': { fill: WETLANDS_STUDY_RESULTS_FILL, other: '#BDBDBD' },
 };
 
 // Sequential ramps for `graduated` — ordered low -> high, one stop per class.
 export const RAMPS: Record<string, Ramp> = {
     'pfdf-dsi': PFDF_DSI,
     'pfdf-likelihood': PFDF_LIKELIHOOD,
+    'wetlands-stressors': WETLANDS_STRESSORS_RAMP,
 };
