@@ -1,5 +1,9 @@
-// Seeded from live GeoServer: hazards:hazards_qfaults_current (WMS GetStyles → geostyler, one-time capture).
-// GeoServer is retiring — this committed module is now the source of truth; edit freely.
+/**
+ * Quaternary faults. Seeded from live GeoServer (hazards:hazards_qfaults_current); GeoServer is
+ * retiring, so this module is now the source of truth.
+ * Uses the handwritten StyleLayer[] escape hatch because one coded field (`qffhazardunit`) sets both
+ * the color (fault age) and the dash (mapping constraint), which no archetype draws.
+ */
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -7,9 +11,26 @@ export const spec = {
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
-    title: "hazards_qfaults_test_style",
+    title: 'Quaternary faults by age and mapping constraint',
+    // One entry per layer below, in the same order. Labels from the GeoServer SLD rule titles.
+    // Line style carries the constraint: solid = well constrained, long dash = moderately, short dash = inferred.
     legend: [
-        { label: 'Quaternary Faults', color: '#e60000', stroke: '#e60000' },
+        { label: '<150 years, well constrained', color: '#e60000' },
+        { label: '<15,000 years, well constrained', color: '#e69800' },
+        { label: '<15,000 years, moderately constrained', color: '#e69800' },
+        { label: '<15,000 years, inferred', color: '#e69800' },
+        { label: '<130,000 years, well constrained', color: '#4ce600' },
+        { label: '<130,000 years, moderately constrained', color: '#4ce600' },
+        { label: '<130,000 years, inferred', color: '#4ce600' },
+        { label: '<750,000 years, well constrained', color: '#005ce6' },
+        { label: '<750,000 years, moderately constrained', color: '#005ce6' },
+        { label: '<750,000 years, inferred', color: '#005ce6' },
+        { label: '<2.6 million years, well constrained', color: '#000000' },
+        { label: '<2.6 million years, moderately constrained', color: '#000000' },
+        { label: '<2.6 million years, inferred', color: '#000000' },
+        { label: 'Undetermined age, well constrained', color: '#a900e6' },
+        { label: 'Undetermined age, moderately constrained', color: '#a900e6' },
+        { label: 'Undetermined age, inferred', color: '#a900e6' },
     ],
 } satisfies Binding & { render: string };
 
@@ -305,6 +326,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-10",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0
         },
@@ -331,6 +353,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-11",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
@@ -360,6 +383,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-12",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
