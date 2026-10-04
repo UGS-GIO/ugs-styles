@@ -30,7 +30,8 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
-// Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
+// Faithful translation of the SLD rules (filters + paint preserved). Handwritten, not an archetype:
+// age sets the color and mapping constraint sets the dash, across one coded field.
 const layers: StyleLayer[] = [
     {
         "id": "hazards_qfaults-0",
@@ -322,6 +323,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-10",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0
         },
@@ -348,6 +350,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-11",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
@@ -377,6 +380,7 @@ const layers: StyleLayer[] = [
         "id": "hazards_qfaults-12",
         "type": "line",
         "paint": {
+            "line-color": "#000000",
             "line-width": 2,
             "line-offset": 0,
             "line-dasharray": [
