@@ -1,5 +1,7 @@
 // Seeded from live GeoServer: hazards:hazards_qfaults_current (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
+// Uses the handwritten StyleLayer[] escape hatch because one coded field (`qffhazardunit`) sets both
+// the color (fault age) and the dash (mapping constraint), which no archetype draws.
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -30,8 +32,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
-// Faithful translation of the SLD rules (filters + paint preserved). Handwritten, not an archetype:
-// age sets the color and mapping constraint sets the dash, across one coded field.
+// Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
 const layers: StyleLayer[] = [
     {
         "id": "hazards_qfaults-0",
