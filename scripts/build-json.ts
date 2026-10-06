@@ -30,10 +30,11 @@ const fontstacksOf = (layers: GLLayer[]): string[] =>
     });
 const hasLabels = (layers: GLLayer[]): boolean => layers.some((l) => l.layout?.['text-field'] !== undefined);
 
-// Manifest entry keyed by STAC item id — what the warehouse joins on (docs/STYLING.md).
-// `layer` (the dir name) is kept for human debugging only.
+// Manifest entry keyed by STAC item id — what the warehouse joins on (docs/STYLING.md) — or by
+// collection id, for a style every item of a collection shares. `layer` (the dir name) is kept for
+// human debugging only.
 type ManifestEntry = {
-    itemId: string; render: string; kind: 'vector' | 'raster';
+    itemId?: string; collectionId?: string; render: string; kind: 'vector' | 'raster';
     assets: string[]; path: string; layer: string; title?: string;
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
@@ -68,16 +69,22 @@ const main = async () => {
             // (2) a default/`layers` export of handwritten StyleLayer[] (bespoke escape hatch),
             // which still needs a `spec`/`binding` for the itemId join. No spec -> skip (not an
             // error): unbound styles just don't autodiscover until bound to a piped layer.
-            if (!spec?.itemId) {
+            const key: string | undefined = spec?.itemId ?? spec?.collectionId;
+            if (!key) {
                 console.warn(`· skip ${layer.name}/${fileId} — no 'spec' export yet (not in manifest)`);
                 continue;
             }
             const layersOutput = normalizeFills(mod.default ?? mod.layers ?? generate(spec));
             const renderId = spec.render ?? fileId;
 
-            const dupKey = `${spec.itemId}/${renderId}`;
+            if (spec.itemId && spec.collectionId) {
+                console.error(`✗ ${layer.name}/${renderId} — bind by itemId or collectionId, not both`);
+                errors++;
+                continue;
+            }
+            const dupKey = `${spec.itemId ? 'item' : 'collection'}:${key}/${renderId}`;
             if (seen.has(dupKey)) {
-                console.error(`✗ duplicate render '${dupKey}' — itemId+render must be unique`);
+                console.error(`✗ duplicate render '${dupKey}' — itemId|collectionId + render must be unique`);
                 errors++;
                 continue;
             }
@@ -114,7 +121,7 @@ const main = async () => {
             await mkdir(dirname(outFile), { recursive: true });
             await writeFile(outFile, JSON.stringify({ layers: layersOutput }, null, 2));
             manifest.push({
-                itemId: spec.itemId,
+                ...(spec.itemId ? { itemId: spec.itemId } : { collectionId: spec.collectionId }),
                 render: renderId,
                 kind: spec.kind ?? 'vector',
                 assets: spec.assets ?? ['pmtiles'],
@@ -129,7 +136,7 @@ const main = async () => {
                 ...(spec.legend ? { legend: spec.legend } : {}),
                 ...(spec.field ? { field: spec.field } : {}),
             });
-            console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
+            console.log(`+ ${relPath}  ->  ${key}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }
     }
 

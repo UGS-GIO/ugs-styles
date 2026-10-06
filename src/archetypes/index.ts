@@ -7,6 +7,8 @@
  *   categorical  `match` a string field -> palette color (fill | line | circle)
  *   graduated    ordered numeric classes -> sequential ramp, one filtered layer per class
  *   point        circle; categorical by field when palette+field given, else single color
+ *   continuous-raster  single-band raster: no GL layers; `colormap_name` + `rescale` ride in the
+ *                manifest and the consumer draws with them (STAC render extension params)
  */
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import type { StyleLayer, StyleSpec } from '../types';
@@ -19,9 +21,10 @@ export function generate(spec: StyleSpec): StyleLayer[] {
         case 'graduated': return graduated(spec);
         case 'point': return point(spec);
         case 'simple': return simple(spec);
+        case 'continuous-raster': return [];
         default: {
             const bad: never = spec.archetype;
-            throw new Error(`${spec.itemId}/${spec.render}: unknown archetype '${String(bad)}'`);
+            throw new Error(`${spec.itemId ?? spec.collectionId}/${spec.render}: unknown archetype '${String(bad)}'`);
         }
     }
 }

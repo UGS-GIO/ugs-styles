@@ -79,6 +79,18 @@ export const spec = {
 `build-json` reads `spec`, runs the generator, writes the GL JSON, and emits the manifest entry
 (`itemId, render, kind, assets, path, …`) the warehouse joins on.
 
+A style every item of a collection shares binds by `collectionId` instead of `itemId` (exactly one).
+That is how a datacube collection (UBM's members, one store each) gets one stretch: the collection's
+own catalog generator reads the entry and writes it as the collection's `renders`. The warehouse join
+skips these entries.
+
+```ts
+export const spec = {
+  collectionId: 'ubm-ensemble-raster', render: 'default', kind: 'raster', assets: ['data'],
+  archetype: 'continuous-raster', colormap_name: 'viridis', rescale: [0, 100],
+} satisfies StyleSpec;
+```
+
 ---
 
 ## 3. Archetypes (the only render logic, ~5 of them)
