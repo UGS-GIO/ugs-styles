@@ -74,14 +74,14 @@ const main = async () => {
                 console.warn(`· skip ${layer.name}/${fileId} — no 'spec' export yet (not in manifest)`);
                 continue;
             }
-            const layersOutput = normalizeFills(mod.default ?? mod.layers ?? generate(spec));
             const renderId = spec.render ?? fileId;
-
+            // Before generate(): a spec bound both ways must fail here, plainly, not inside an archetype.
             if (spec.itemId && spec.collectionId) {
                 console.error(`✗ ${layer.name}/${renderId} — bind by itemId or collectionId, not both`);
                 errors++;
                 continue;
             }
+            const layersOutput = normalizeFills(mod.default ?? mod.layers ?? generate(spec));
             const dupKey = `${spec.itemId ? 'item' : 'collection'}:${key}/${renderId}`;
             if (seen.has(dupKey)) {
                 console.error(`✗ duplicate render '${dupKey}' — itemId|collectionId + render must be unique`);

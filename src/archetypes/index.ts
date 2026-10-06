@@ -15,6 +15,9 @@ import type { StyleLayer, StyleSpec } from '../types';
 import { PALETTES, RAMPS, type Palette, type Ramp } from '../palettes';
 import { matchByField } from '../expressions/categorical';
 
+// What a spec binds to: its item id, or its collection id. Errors and layer ids name it.
+export const keyOf = (spec: StyleSpec): string => spec.itemId ?? spec.collectionId;
+
 export function generate(spec: StyleSpec): StyleLayer[] {
     switch (spec.archetype) {
         case 'categorical': return categorical(spec);
@@ -24,24 +27,24 @@ export function generate(spec: StyleSpec): StyleLayer[] {
         case 'continuous-raster': return [];
         default: {
             const bad: never = spec.archetype;
-            throw new Error(`${spec.itemId ?? spec.collectionId}/${spec.render}: unknown archetype '${String(bad)}'`);
+            throw new Error(`${keyOf(spec)}/${spec.render}: unknown archetype '${String(bad)}'`);
         }
     }
 }
 
 const palette = (spec: StyleSpec): Palette => {
     const p = spec.palette ? PALETTES[spec.palette] : undefined;
-    if (!p) throw new Error(`${spec.itemId}/${spec.render}: unknown palette '${spec.palette}'`);
+    if (!p) throw new Error(`${keyOf(spec)}/${spec.render}: unknown palette '${spec.palette}'`);
     return p;
 };
 const rampOf = (spec: StyleSpec): Ramp => {
     const r = spec.palette ? RAMPS[spec.palette] : undefined;
-    if (!r?.length) throw new Error(`${spec.itemId}/${spec.render}: unknown ramp '${spec.palette}'`);
+    if (!r?.length) throw new Error(`${keyOf(spec)}/${spec.render}: unknown ramp '${spec.palette}'`);
     return r;
 };
 const need = (spec: StyleSpec, k: 'field'): string => {
     const v = spec[k];
-    if (!v) throw new Error(`${spec.itemId}/${spec.render}: archetype '${spec.archetype}' needs '${k}'`);
+    if (!v) throw new Error(`${keyOf(spec)}/${spec.render}: archetype '${spec.archetype}' needs '${k}'`);
     return v;
 };
 
@@ -51,13 +54,13 @@ function categorical(spec: StyleSpec): StyleLayer[] {
     const color = matchByField(field, p.fill, p.other ?? '#BDBDBD');
     const geom = spec.geom ?? 'fill';
     if (geom === 'line') {
-        return [{ id: `${spec.itemId}-line`, type: 'line', paint: { 'line-color': color, 'line-width': 1.2 } }];
+        return [{ id: `${keyOf(spec)}-line`, type: 'line', paint: { 'line-color': color, 'line-width': 1.2 } }];
     }
     if (geom === 'circle') {
         const stroke = matchByField(field, p.stroke ?? p.fill, p.other ?? '#858585');
-        return [{ id: `${spec.itemId}-circle`, type: 'circle', paint: { 'circle-color': color, 'circle-radius': 4, 'circle-stroke-color': stroke, 'circle-stroke-width': 0.5 } }];
+        return [{ id: `${keyOf(spec)}-circle`, type: 'circle', paint: { 'circle-color': color, 'circle-radius': 4, 'circle-stroke-color': stroke, 'circle-stroke-width': 0.5 } }];
     }
-    return [{ id: `${spec.itemId}-fill`, type: 'fill', paint: { 'fill-color': color, 'fill-opacity': 0.6, 'fill-outline-color': '#333333' } }];
+    return [{ id: `${keyOf(spec)}-fill`, type: 'fill', paint: { 'fill-color': color, 'fill-opacity': 0.6, 'fill-outline-color': '#333333' } }];
 }
 
 /**
@@ -85,12 +88,12 @@ function graduated(spec: StyleSpec): StyleLayer[] {
     const ramp = rampOf(spec);
     const { values, breaks } = spec;
     if ((values && breaks) || (!values && !breaks))
-        throw new Error(`${spec.itemId}/${spec.render}: 'graduated' needs exactly one of 'values' | 'breaks'`);
+        throw new Error(`${keyOf(spec)}/${spec.render}: 'graduated' needs exactly one of 'values' | 'breaks'`);
 
     const domain = [...(values ?? breaks ?? [])].sort((a, b) => a - b);
     if (domain.length !== ramp.length)
         throw new Error(
-            `${spec.itemId}/${spec.render}: ${values ? 'values' : 'breaks'} has ${domain.length} ` +
+            `${keyOf(spec)}/${spec.render}: ${values ? 'values' : 'breaks'} has ${domain.length} ` +
             `entr${domain.length === 1 ? 'y' : 'ies'} but ramp '${spec.palette}' has ${ramp.length} stops`,
         );
 
@@ -110,11 +113,11 @@ function graduated(spec: StyleSpec): StyleLayer[] {
 
     return domain.map((value, i) => (geom === 'line'
         ? {
-            id: `${spec.itemId}-c${i}`, type: 'line', filter: at(value, i),
+            id: `${keyOf(spec)}-c${i}`, type: 'line', filter: at(value, i),
             paint: { 'line-color': ramp[i], 'line-width': 1.2, 'line-opacity': opacity },
         }
         : {
-            id: `${spec.itemId}-c${i}`, type: 'fill', filter: at(value, i),
+            id: `${keyOf(spec)}-c${i}`, type: 'fill', filter: at(value, i),
             paint: { 'fill-color': ramp[i], 'fill-opacity': opacity },
         }));
 }
@@ -123,13 +126,13 @@ function point(spec: StyleSpec): StyleLayer[] {
     const p = spec.palette ? palette(spec) : undefined;
     const color = p && spec.field ? matchByField(spec.field, p.fill, p.other ?? '#BDBDBD') : (spec.color ?? '#D1491C');
     const stroke = p && spec.field ? matchByField(spec.field, p.stroke ?? p.fill, p.other ?? '#858585') : '#444444';
-    return [{ id: `${spec.itemId}-circle`, type: 'circle', paint: { 'circle-radius': 4, 'circle-color': color, 'circle-stroke-color': stroke, 'circle-stroke-width': 0.5 } }];
+    return [{ id: `${keyOf(spec)}-circle`, type: 'circle', paint: { 'circle-radius': 4, 'circle-color': color, 'circle-stroke-color': stroke, 'circle-stroke-width': 0.5 } }];
 }
 
 function simple(spec: StyleSpec): StyleLayer[] {
     const c = spec.color ?? '#888888';
     const geom = spec.geom ?? 'fill';
-    if (geom === 'line') return [{ id: `${spec.itemId}-line`, type: 'line', paint: { 'line-color': c, 'line-width': 1.2 } }];
-    if (geom === 'circle') return [{ id: `${spec.itemId}-circle`, type: 'circle', paint: { 'circle-color': c, 'circle-radius': 3 } }];
-    return [{ id: `${spec.itemId}-fill`, type: 'fill', paint: { 'fill-color': c, 'fill-opacity': spec.opacity ?? 0.4 } }];
+    if (geom === 'line') return [{ id: `${keyOf(spec)}-line`, type: 'line', paint: { 'line-color': c, 'line-width': 1.2 } }];
+    if (geom === 'circle') return [{ id: `${keyOf(spec)}-circle`, type: 'circle', paint: { 'circle-color': c, 'circle-radius': 3 } }];
+    return [{ id: `${keyOf(spec)}-fill`, type: 'fill', paint: { 'fill-color': c, 'fill-opacity': spec.opacity ?? 0.4 } }];
 }
