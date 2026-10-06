@@ -4,13 +4,16 @@ type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K>
 
 export type StyleLayer = DistributiveOmit<LayerSpecification, 'source'>;
 
-// How a style render binds to a warehouse layer. The warehouse joins on `itemId` (the STAC
-// item id it mints — a serving topic's `{layer}` stem, or a pub `series_id`), reads `kind`
-// to pick the render shape, and attaches the style only to items carrying one of `assets`.
-// build-json.ts emits this into dist-json/index.json for STAC autodiscovery (warehouse
+// How a style render binds to a STAC layer: by `itemId` (the STAC item id the warehouse mints — a
+// serving topic's `{layer}` stem, or a pub `series_id`), or by `collectionId` for one style shared by
+// every item of a collection (a datacube collection's members, e.g. 'ubm-ensemble-raster'). The
+// consumer reads `kind` to pick the render shape and attaches the style only where one of `assets`
+// is. build-json.ts emits this into dist-json/index.json for STAC autodiscovery (warehouse
 // docs/STYLING.md). Declare it next to each render: `export const binding = {...} satisfies Binding`.
-export type Binding = {
-    itemId: string;                  // == STAC item id (e.g. 'enmin_ucrc_wells', 'GQ-1560')
+export type Binding = (
+    | { itemId: string; collectionId?: never }        // == STAC item id (e.g. 'enmin_ucrc_wells', 'GQ-1560')
+    | { collectionId: string; itemId?: never }        // == STAC collection id
+) & {
     kind: 'vector' | 'raster';
     assets: string[];                // STAC asset keys this render targets: ['pmtiles'] | ['cog']
     title?: string;                  // human label for the render
@@ -28,7 +31,7 @@ export type Geom = 'fill' | 'line' | 'circle';
 // default-export StyleLayer[] instead (the escape hatch). See DESIGN.md.
 export type StyleSpec = Binding & {
     render: string;                  // render id (default | by-purpose | …); unique per item
-    archetype: 'simple' | 'categorical' | 'point' | 'graduated';
+    archetype: 'simple' | 'categorical' | 'point' | 'graduated' | 'continuous-raster';
     field?: string;                  // attribute keyed on (categorical / graduated / point-by-field)
     palette?: string;                // named palette or ramp (see palettes/index.ts)
     geom?: Geom;                     // categorical/simple geometry (default 'fill')
