@@ -43,6 +43,7 @@ type ManifestEntry = {
     // renders). Consumers derive colors from here verbatim.
     legend?: { label: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
     field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
+    esri?: string;     // CDN-relative Esri renderer: a module's own `esri` export, else build:esri
 };
 
 const main = async () => {
@@ -113,6 +114,12 @@ const main = async () => {
             const outFile = resolve(OUT_DIR, relPath);
             await mkdir(dirname(outFile), { recursive: true });
             await writeFile(outFile, JSON.stringify({ layers: layersOutput }, null, 2));
+            // A module may hand-write its Esri renderer (UCRC pies); build:esri derives the rest.
+            const esriPath = mod.esri ? relPath.replace(/^styles\//, 'esri/') : undefined;
+            if (esriPath) {
+                await mkdir(dirname(resolve(OUT_DIR, esriPath)), { recursive: true });
+                await writeFile(resolve(OUT_DIR, esriPath), JSON.stringify(mod.esri));
+            }
             manifest.push({
                 itemId: spec.itemId,
                 render: renderId,
@@ -128,6 +135,7 @@ const main = async () => {
                 ...(hasLabels(layersOutput) ? { glyphs: GLYPHS_PATH } : {}),
                 ...(spec.legend ? { legend: spec.legend } : {}),
                 ...(spec.field ? { field: spec.field } : {}),
+                ...(esriPath ? { esri: esriPath } : {}),
             });
             console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }

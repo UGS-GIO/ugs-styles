@@ -41,6 +41,9 @@ jobs:
       - run: npm run gen:sprites
       # Glyphs for the label renders. After build:json for the same reason as sprites: it wipes dist.
       - run: npm run build:fonts
+      # Esri renderers for the FeatureServer (Map Viewer, Experience Builder). Reads the live
+      # GeoParquet for distinct values and the sprites above for icon renders, so it runs last.
+      - run: npm run build:esri
       # Gate the release on data reality: fails if a style keys on a field absent from the live
       # GeoParquet (value/case drift only warns). Catches "builds clean but draws nothing".
       - run: npm run validate

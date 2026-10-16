@@ -48,6 +48,12 @@ from the CDN — the same source+source-layer binding the warehouse viewer does 
 is tuned with no publish/reingest. `npm run dev` (watch + serve) is the tight loop; `npm run
 preview` is one-shot. Override the data CDN with `?cdn=<base>`.
 
+`build:esri` (after `build:json` and `gen:sprites`) writes `dist-json/esri/{layer}/{render}.json`, the
+same render as an Esri renderer for clients that only read ArcGIS FeatureServer `drawingInfo` (Map
+Viewer, Experience Builder, StoryMaps). It runs the GL fragment through MapLibre's evaluator for each
+distinct value in the live GeoParquet, so it needs no per-style work. A module can hand-write its
+own with an `esri` export when Esri has a closer fit (UCRC by-boxtype uses Esri's pie-chart renderer).
+
 `build:json` produces `dist-json/styles/{layer}/{render}.json` (`{ "layers": [...] }`) and
 `dist-json/index.json` (manifest keyed by `itemId`, the warehouse join key).
 
