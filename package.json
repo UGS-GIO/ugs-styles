@@ -18,7 +18,8 @@
     "gen:sprites": "tsx scripts/gen-sprites.ts",
     "lint": "eslint .",
     "gen:boxtype-membership": "tsx scripts/gen-boxtype-membership.ts",
-    "build:esri": "tsx scripts/build-esri.ts"
+    "build:esri": "tsx scripts/build-esri.ts",
+    "test": "tsx --test src/*.test.ts"
   },
   "peerDependencies": {
     "maplibre-gl": ">=4"

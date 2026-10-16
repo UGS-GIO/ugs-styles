@@ -6,7 +6,8 @@
  *
  * Reads only the styled columns of each layer's GeoParquet, for the distinct values to classify,
  * and the sprite sheets gen:sprites wrote, for icon renders. Run after build:json + gen:sprites.
- * A layer whose data can't be read keeps its GL style and gets no renderer.
+ * A layer with no published GeoParquet (404) keeps its GL style and gets no renderer. Any other
+ * read failure fails the build, so a CDN blip never publishes an index without a live renderer.
  *
  *   npm run build:esri
  *   GEOPARQUET_BASE=<url or dir> npm run build:esri
@@ -19,13 +20,14 @@ import { compressors } from 'hyparquet-compressors';
 import { loadImage, createCanvas } from '@napi-rs/canvas';
 import { drawLayers, fieldsOf, toRenderer, type Geometry, type IconLookup, type Legend } from '../src/esri';
 import type { GLLayer } from '../src/layers';
+import { isMissing, withRetries } from './geoparquet';
 
 const OUT_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'dist-json');
 const GEOPARQUET_BASE = (process.env.GEOPARQUET_BASE
     ?? 'https://maps-assets.geology.utah.gov/warehouse').replace(/\/+$/, '');
 
 type Entry = { itemId: string; render: string; kind: string; path: string; layer: string;
-    title?: string; sprite?: string; legend?: Legend; esri?: string };
+    title?: string; sprite?: string; legend?: Legend; esri?: string; esriSource?: 'module' };
 type Row = Record<string, string | number | boolean | null>;
 type Sprite = Record<string, { x: number; y: number; width: number; height: number; pixelRatio?: number }>;
 
@@ -55,15 +57,18 @@ const cell = (v: unknown): string | number | boolean | null =>
 async function readRows(itemId: string, fields: string[]) {
     const src = `${GEOPARQUET_BASE}/geoparquet/${itemId}/${itemId}.parquet`;
     try {
-        const file = src.startsWith('http') ? await asyncBufferFromUrl({ url: src }) : await asyncBufferFromFile(src);
-        const meta = await parquetMetadataAsync(file);
-        const cols = new Set(meta.schema.map((s) => s.name));
-        const present = fields.filter((f) => cols.has(f));
-        const raw = present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [];
-        const rows: Row[] = raw.map((r) => Object.fromEntries(present.map((f) => [f, cell(r[f])])));
-        return { rows, kv: meta.key_value_metadata };
+        return await withRetries(async () => {
+            const file = src.startsWith('http') ? await asyncBufferFromUrl({ url: src }) : await asyncBufferFromFile(src);
+            const meta = await parquetMetadataAsync(file);
+            const cols = new Set(meta.schema.map((s) => s.name));
+            const present = fields.filter((f) => cols.has(f));
+            const raw = present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [];
+            const rows: Row[] = raw.map((r) => Object.fromEntries(present.map((f) => [f, cell(r[f])])));
+            return { rows, kv: meta.key_value_metadata };
+        });
     } catch (err) {
-        console.warn(`  ! ${itemId}: no readable GeoParquet (${err instanceof Error ? err.message : String(err)})`);
+        if (!isMissing(err)) throw new Error(`${itemId}: GeoParquet unreadable at ${src}`, { cause: err });
+        console.warn(`  ! ${itemId}: no published GeoParquet`);
         return null;
     }
 }
@@ -106,11 +111,15 @@ const main = async () => {
     const manifest: Entry[] = JSON.parse(await readFile(indexPath, 'utf8'));
     let written = 0;
     for (const entry of manifest) {
-        if (entry.kind !== 'vector' || entry.esri) continue;   // raster, or hand-written in the module
+        // Derived every run, so a rerun picks up style and data changes; a module's own is kept.
+        if (entry.kind !== 'vector' || entry.esriSource === 'module') continue;
         const { layers }: { layers: GLLayer[] } = JSON.parse(await readFile(resolve(OUT_DIR, entry.path), 'utf8'));
         if (!drawLayers(layers).length) continue;
         const got = await readRows(entry.itemId, fieldsOf(layers));   // drawn + labelled fields
-        if (!got) continue;
+        if (!got) {
+            delete entry.esri;
+            continue;
+        }
         const icons = await iconsFor(entry.sprite);
         const out = toRenderer(layers, geometryOf(got.kv, layers), got.rows, entry.legend, icons.lookup, icons.px);
         const rel = entry.path.replace(/^styles\//, 'esri/');

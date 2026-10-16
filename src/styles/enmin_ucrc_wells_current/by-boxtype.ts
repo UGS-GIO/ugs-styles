@@ -122,7 +122,9 @@ export const esri = {
         size: 8,
         outline: { type: 'esriSLS', style: 'esriSLSSolid', color: [68, 68, 68, 255], width: 0.5 },
         othersCategory: { threshold: 0, color: rgb(UCRC_BOX_GROUP_COLORS.OTHER), label: 'Other' },
+        // Stops in ascending scale, as Esri requires: the reverse of zoom order.
         visualVariables: [{ type: 'sizeInfo', valueExpression: '$view.scale',
-            stops: ICON_SIZE.map(([z, s]) => ({ value: 295828763.7957775 / 2 ** z, size: 40 * s * 0.75 })) }],
+            stops: ICON_SIZE.map(([z, s]) => ({ value: 295828763.7957775 / 2 ** z, size: 40 * s * 0.75 }))
+                .sort((a, b) => a.value - b.value) }],
     },
 };

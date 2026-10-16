@@ -20,6 +20,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { asyncBufferFromUrl, parquetReadObjects, parquetMetadataAsync } from 'hyparquet';
 import { compressors } from 'hyparquet-compressors';
 import { PALETTES } from '../src/palettes';
+import { isMissing, withRetries } from './geoparquet';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STYLES_DIR = resolve(__dirname, '..', 'src', 'styles');
@@ -117,13 +118,17 @@ async function main() {
     const url = `${GEOPARQUET_BASE}/geoparquet/${itemId}/${itemId}.parquet`;
     let cols: string[]; let rows: Record<string, unknown>[];
     try {
-      const file = await asyncBufferFromUrl({ url });
-      const meta = await parquetMetadataAsync(file);
-      cols = meta.schema.filter((s) => s.num_children == null).map((s) => s.name);
-      const present = fields.filter((f) => cols.includes(f));
-      rows = present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [];
+      ({ cols, rows } = await withRetries(async () => {
+        const file = await asyncBufferFromUrl({ url });
+        const meta = await parquetMetadataAsync(file);
+        const cols = meta.schema.filter((s) => s.num_children == null).map((s) => s.name);
+        const present = fields.filter((f) => cols.includes(f));
+        return { cols, rows: present.length ? await parquetReadObjects({ file, columns: present, compressors }) : [] };
+      }));
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
+      // Only a missing file is a reason to skip; a timeout or 5xx would hide a real field error.
+      if (!isMissing(e)) { console.log(`✗ ${itemId}: cannot read ${url} — ${msg.slice(0, 80)}`); errors++; continue; }
       // Some layers (review-only hazards items) have no PUBLIC geoparquet, so CI genuinely cannot read
       // their data. Failing here would block publishing every style for those layers, so this is an
       // explicit UNVALIDATED warning rather than an error — the style ships, but nobody should read a

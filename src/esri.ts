@@ -344,6 +344,10 @@ export type Renderer = { renderer: Json; labelingInfo: Json[]; minScale?: number
 // GL zooms run one level below Esri LODs at the same scale (512px vs 256px tiles).
 const zoomToScale = (z: number) => 295828763.7957775 / 2 ** z;
 
+/** A size by map scale. Esri requires its stops in ascending scale, the reverse of zoom order. */
+export const scaleSizeInfo = (stops: { value: number; size: number }[]): Json =>
+    ({ type: 'sizeInfo', valueExpression: '$view.scale', stops: [...stops].sort((a, b) => a.value - b.value) });
+
 /** A circle radius or icon size that interpolates on zoom becomes a scale-driven size. */
 function sizeByScale(layers: GLLayer[], iconPx: number): Json | null {
     const top = layers.find((l) => l.type === 'circle' || isIcon(l));
@@ -352,12 +356,12 @@ function sizeByScale(layers: GLLayer[], iconPx: number): Json | null {
     const stops = r.slice(3);
     if (!stops.every(isNum)) return null;
     const px = (v: number) => (top?.type === 'circle' ? 2 * v : v * iconPx);
-    const out: Json[] = [];
+    const out: { value: number; size: number }[] = [];
     for (let i = 0; i + 1 < stops.length; i += 2) {
         const [z, v] = [stops[i], stops[i + 1]];
         if (isNum(z) && isNum(v)) out.push({ value: zoomToScale(z), size: px(v) * PT });
     }
-    return { type: 'sizeInfo', valueExpression: '$view.scale', stops: out };
+    return scaleSizeInfo(out);
 }
 
 /** A circle radius that interpolates on a numeric field becomes a field-driven size. */
@@ -376,6 +380,14 @@ function sizeByField(layers: GLLayer[]): { info: Json; field: string } | null {
     }
     return { field: name, info: { type: 'sizeInfo', field: name, stops: out } };
 }
+
+/** The largest double below `x`. */
+const below = (x: number): number => {
+    if (x === 0) return -Number.MIN_VALUE;
+    const bits = new BigInt64Array(new Float64Array([x]).buffer);
+    bits[0] = (bits[0] ?? 0n) + (x > 0 ? -1n : 1n);
+    return new Float64Array(bits.buffer)[0] ?? x;
+};
 
 const OTHER = '\u0000unseen';  // a value no column holds: what GL draws for values added later
 
@@ -420,6 +432,13 @@ export function toRenderer(
         const nums = values.filter(isNum);
         const cuts = thresholdsOf(layers, first);
         const bounds = [Math.min(...nums, ...cuts) - 1, ...cuts, Math.max(...nums, ...cuts) + 1];
+        const at = (v: number) => JSON.stringify(symbolFor(layers, { [first]: v }, geometry, SIZE_ZOOM)?.json ?? null);
+        // Esri's classMaxValue is inclusive. A value exactly on a cut belongs to whichever side GL
+        // draws it with (`>=` puts it above), so a cut GL draws above ends the class just below it.
+        const top = bounds.map((b, i) => {
+            const above = bounds[i + 1];
+            return i > 0 && above !== undefined && at(b) === at((b + above) / 2) ? below(b) : b;
+        });
         const classBreakInfos: Json[] = [];
         for (let i = 0; i + 1 < bounds.length; i++) {
             const [lo, hi] = [bounds[i], bounds[i + 1]];
@@ -427,7 +446,7 @@ export function toRenderer(
             const symbol = symbolFor(layers, { [first]: (lo + hi) / 2 }, geometry, SIZE_ZOOM);
             if (!symbol) continue;
             const label = legendLabel(legend, symbol, []) ?? (i === 0 ? `< ${hi}` : `${lo} to ${hi}`);
-            classBreakInfos.push({ classMinValue: lo, classMaxValue: hi, label, symbol: symbol.json });
+            classBreakInfos.push({ classMinValue: top[i] ?? lo, classMaxValue: top[i + 1] ?? hi, label, symbol: symbol.json });
         }
         return done({ type: 'classBreaks', field: first, minValue: bounds[0] ?? 0, classBreakInfos, ...vv });
     }

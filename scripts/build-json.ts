@@ -44,6 +44,7 @@ type ManifestEntry = {
     legend?: { label: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
     field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
     esri?: string;     // CDN-relative Esri renderer: a module's own `esri` export, else build:esri
+    esriSource?: 'module';  // the renderer is the module's own; build:esri leaves it alone
 };
 
 const main = async () => {
@@ -135,7 +136,7 @@ const main = async () => {
                 ...(hasLabels(layersOutput) ? { glyphs: GLYPHS_PATH } : {}),
                 ...(spec.legend ? { legend: spec.legend } : {}),
                 ...(spec.field ? { field: spec.field } : {}),
-                ...(esriPath ? { esri: esriPath } : {}),
+                ...(esriPath ? { esri: esriPath, esriSource: 'module' as const } : {}),
             });
             console.log(`+ ${relPath}  ->  ${spec.itemId}/${renderId} (${spec.archetype ?? spec.kind ?? 'vector'})`);
         }
