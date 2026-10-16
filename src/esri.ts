@@ -73,6 +73,7 @@ export function fieldsOf(layers: GLLayer[]): string[] {
         walk(l.filter);
         Object.values(l.paint ?? {}).forEach(walk);
         walk(l.layout?.['icon-image']);
+        walk(l.layout?.['icon-size']);
     }
     return [...out];
 }

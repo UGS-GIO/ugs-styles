@@ -101,8 +101,9 @@ export default layers;
 // Esri has no sprite pies, but it has a pie-chart renderer: one wedge per group the well holds,
 // with a three-entry legend like this render's. Codes outside Core and Cuttings count as Other.
 const arcadeHas = (g: UcrcBoxGroup): string => {
-    const known = JSON.stringify([...groupValues('CORE'), ...groupValues('CUTTINGS')].map((v) => v.value));
-    const mine = JSON.stringify(groupValues(g).map((v) => v.value));
+    // Upper-cased like the codes they are tested against.
+    const known = JSON.stringify([...groupValues('CORE'), ...groupValues('CUTTINGS')].map((v) => v.value.toUpperCase()));
+    const mine = JSON.stringify(groupValues(g).map((v) => v.value.toUpperCase()));
     const test = g === 'OTHER' ? `!Includes(${known}, Trim(c))` : `Includes(${mine}, Trim(c))`;
     return `var codes = Split(Upper(DefaultValue($feature.box_type_codes, '')), ',');
 if (Count(codes) == 0 || codes[0] == '') { return ${g === 'OTHER' ? 1 : 0} }
