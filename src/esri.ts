@@ -314,9 +314,13 @@ export function toLabels(layers: GLLayer[], geometry: Geometry, rows: Props[], w
             labelExpressionInfo: { expression },
             labelPlacement: PLACEMENT[geometry],
             ...(l.minzoom ? { minScale: zoomToScale(l.minzoom) } : {}),
+            ...(l.maxzoom === undefined ? {} : { maxScale: zoomToScale(l.maxzoom) }),
         };
         const fields = fieldsOf([l]);
-        if (!fields.length) { out.push({ ...base, symbol: symbol({}) }); continue; }
+        if (!fields.length) {
+            if (passes(l, {}, geometry, SIZE_ZOOM)) out.push({ ...base, symbol: symbol({}) });
+            continue;
+        }
 
         const tuples = new Map<string, Props>();
         for (const row of rows) {
@@ -339,29 +343,42 @@ export function toLabels(layers: GLLayer[], geometry: Geometry, rows: Props[], w
 
 // ── renderers ───────────────────────────────────────────────────────────────
 
-export type Renderer = { renderer: Json; labelingInfo: Json[]; minScale?: number; warnings: string[] };
+export type Renderer = { renderer: Json; labelingInfo: Json[]; minScale?: number; maxScale?: number; warnings: string[] };
 
 // GL zooms run one level below Esri LODs at the same scale (512px vs 256px tiles).
 const zoomToScale = (z: number) => 295828763.7957775 / 2 ** z;
 
+type Stop = { value: number; size: number };
+
 /** A size by map scale. Esri requires its stops in ascending scale, the reverse of zoom order. */
-export const scaleSizeInfo = (stops: { value: number; size: number }[]): Json =>
+export const scaleSizeInfo = (stops: Stop[]): Json =>
     ({ type: 'sizeInfo', valueExpression: '$view.scale', stops: [...stops].sort((a, b) => a.value - b.value) });
 
-/** A circle radius or icon size that interpolates on zoom becomes a scale-driven size. */
+/** A circle radius or icon size set by zoom alone, sampled densely: Esri interpolates in scale, GL in zoom. */
 function sizeByScale(layers: GLLayer[], iconPx: number): Json | null {
-    const top = layers.find((l) => l.type === 'circle' || isIcon(l));
-    const r = top?.type === 'circle' ? top.paint?.['circle-radius'] : top?.layout?.['icon-size'];
-    if (!isList(r) || r[0] !== 'interpolate' || JSON.stringify(r[2]) !== '["zoom"]') return null;
-    const stops = r.slice(3);
-    if (!stops.every(isNum)) return null;
-    const px = (v: number) => (top?.type === 'circle' ? 2 * v : v * iconPx);
-    const out: { value: number; size: number }[] = [];
-    for (let i = 0; i + 1 < stops.length; i += 2) {
-        const [z, v] = [stops[i], stops[i + 1]];
-        if (isNum(z) && isNum(v)) out.push({ value: zoomToScale(z), size: px(v) * PT });
-    }
-    return scaleSizeInfo(out);
+    const top = [...layers].reverse().find((l) => l.type === 'circle' || isIcon(l));
+    const prop = top?.type === 'circle' ? 'circle-radius' : 'icon-size';
+    const found = top && specFor(top, prop);
+    if (!top || !found || !isPropertyValue(found.raw)) return null;
+    if (normalizePropertyExpression(found.raw, found.spec).kind !== 'camera') return null;
+    const size = (z: number) => {
+        const v = num(evaluate(top, prop, {}, 'point', z), 0);
+        return (top.type === 'circle' ? 2 * v : v * iconPx) * PT;
+    };
+    // Quarter zooms, plus just below each zoom literal so a step stays a step.
+    const lits = JSON.stringify(found.raw).match(/-?\d+(\.\d+)?/g)?.map(Number) ?? [];
+    const zooms = [...new Set([...Array.from({ length: 97 }, (_, i) => i / 4), ...lits.map((z) => z - 1e-3)])]
+        .filter((z) => z >= 0 && z <= 24).sort((a, b) => a - b);
+    const pts = zooms.map((z) => ({ value: zoomToScale(z), size: size(z) }));
+    // Drop each point the line from the last kept point to the next one still passes through.
+    const off = (a: Stop, b: Stop, p: Stop) => Math.abs(a.size + (b.size - a.size) * (p.value - a.value) / (b.value - a.value) - p.size);
+    let last = 0;
+    const kept = pts.filter((p, i) => {
+        const [a, b] = [pts[last], pts[i + 1]];
+        if (i === 0 || !a || !b || pts.slice(last + 1, i + 1).some((q) => off(a, b, q) > 0.05)) last = i;
+        return last === i;
+    });
+    return scaleSizeInfo(kept);
 }
 
 /** A circle radius that interpolates on a numeric field becomes a field-driven size. */
@@ -390,6 +407,10 @@ const below = (x: number): number => {
 };
 
 const OTHER = '\u0000unseen';  // a value no column holds: what GL draws for values added later
+const DELIMITERS = [',', '|', ';', '~', '^'];
+
+const emptySymbol = (geometry: Geometry): Json => ({ type: 'CIMSymbolReference', symbol: {
+    type: { polygon: 'CIMPolygonSymbol', line: 'CIMLineSymbol', point: 'CIMPointSymbol' }[geometry], symbolLayers: [] } });
 
 export function toRenderer(
     layersIn: GLLayer[], geometry: Geometry, rows: Props[], legend: Legend | undefined,
@@ -409,7 +430,9 @@ export function toRenderer(
     const fields = fieldsOf(layers).filter((f) => f !== fieldSize?.field);
     const minzoom = Math.min(...layers.map((l) => l.minzoom ?? 0));
     const minScale = minzoom > 0 ? zoomToScale(minzoom) : undefined;
-    const done = (renderer: Json): Renderer => ({ renderer, labelingInfo, minScale, warnings });
+    const maxzoom = Math.max(...layers.map((l) => l.maxzoom ?? Infinity));
+    const maxScale = Number.isFinite(maxzoom) ? zoomToScale(maxzoom) : undefined;
+    const done = (renderer: Json): Renderer => ({ renderer, labelingInfo, minScale, maxScale, warnings });
 
     const [first, second, third] = fields;
     if (first === undefined) {
@@ -448,7 +471,9 @@ export function toRenderer(
             const label = legendLabel(legend, symbol, []) ?? (i === 0 ? `< ${hi}` : `${lo} to ${hi}`);
             classBreakInfos.push({ classMinValue: top[i] ?? lo, classMaxValue: top[i + 1] ?? hi, label, symbol: symbol.json });
         }
-        return done({ type: 'classBreaks', field: first, minValue: bounds[0] ?? 0, classBreakInfos, ...vv });
+        const none = symbolFor(layers, { [first]: null }, geometry, SIZE_ZOOM);
+        return done({ type: 'classBreaks', field: first, minValue: bounds[0] ?? 0, classBreakInfos,
+            ...(none ? { defaultSymbol: none.json, defaultLabel: 'No value' } : {}), ...vv });
     }
 
     if (tuples.size > MAX_TUPLES) warnings.push(`${tuples.size} distinct values; legend capped at ${MAX_TUPLES}`);
@@ -464,15 +489,21 @@ export function toRenderer(
         return i < 0 ? undefined : i;
     };
     const groups = new Map<string, { symbol: Symbol; values: string[][]; idx: number; at?: number }>();
+    const hidden: string[][] = [];
     for (const t of [...tuples.values()].slice(0, MAX_TUPLES)) {
         const symbol = symbolFor(layers, t, geometry, SIZE_ZOOM, icon);
-        if (!symbol) continue;   // GL draws nothing for it either
+        if (!symbol) {
+            hidden.push(keyFields.map((f) => String(t[f] ?? '<Null>')));
+            continue;
+        }
         const key = JSON.stringify(symbol.json);
         const g = groups.get(key) ?? { symbol, values: [], idx: groups.size, at: aligned(t) };
         g.values.push(keyFields.map((f) => String(t[f] ?? '<Null>')));
         groups.set(key, g);
     }
     const other = symbolFor(layers, Object.fromEntries(fields.map((f) => [f, OTHER])), geometry, SIZE_ZOOM, icon);
+    const delimiter = DELIMITERS.find((d) => ![...groups.values()].flatMap((g) => g.values).concat(hidden)
+        .some((v) => v.some((x) => x.includes(d)))) ?? '\u001f';
 
     const classes = [...groups.values()].map((g) => {
         const firsts = g.values.map(([v]) => v ?? '');
@@ -487,15 +518,17 @@ export function toRenderer(
             order: g.at ?? legendIndex(legend, g.symbol, firsts) ?? 1000 + g.idx,
         };
     }).sort((a, b) => a.order - b.order);
+    // Under a default symbol, values GL leaves undrawn need a class that draws nothing.
+    if (other && hidden.length) classes.push({ label: 'Not drawn', symbol: emptySymbol(geometry), values: hidden, order: Infinity });
 
     return done({
         type: 'uniqueValue',
         field1: first,
         ...(second === undefined ? {} : { field2: second }),
         ...(third === undefined ? {} : { field3: third }),
-        fieldDelimiter: ',',
+        fieldDelimiter: delimiter,
         uniqueValueGroups: [{ classes: classes.map(({ label, symbol, values: v }) => ({ label, symbol, values: v })) }],
-        uniqueValueInfos: classes.flatMap(({ label, symbol, values: v }) => v.map((x) => ({ value: x.join(','), label, symbol }))),
+        uniqueValueInfos: classes.flatMap(({ label, symbol, values: v }) => v.map((x) => ({ value: x.join(delimiter), label, symbol }))),
         // What GL draws for a value added after this build.
         ...(other ? { defaultSymbol: other.json, defaultLabel: classes.some((c) => c.label === 'Other') ? 'Other values' : 'Other' } : {}),
         ...vv,
