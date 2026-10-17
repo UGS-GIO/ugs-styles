@@ -396,7 +396,8 @@ function diff(gl: Draw[], es: Draw[]): string | null {
         if (!b || a.kind !== b.kind || a.icon !== b.icon && a.kind !== 'icon') return 'symbol kind';
         if (a.kind === 'icon') { if (a.icon !== b.icon) return 'icon'; continue; }
         if (!sameColor(a.color, b.color)) return `${a.kind} color`;
-        if (a.kind === 'stroke' && !near(a.width, b.width)) return 'stroke width';
+        // A zoom ramp is drawn at its bucket's middle (half zooms): up to a quarter zoom of slope off.
+        if (a.kind === 'stroke' && !near(a.width, b.width, 0.15)) return 'stroke width';
         if (a.kind === 'stroke' && round(a.dash) !== round(b.dash, 0.1 / PT)) return 'dash';
         if (a.kind === 'stroke' && !near(a.offset, b.offset)) return 'offset';
         if (a.kind === 'circle' && (!near(a.radius, b.radius, 0.05) || !near(a.sw, b.sw) || !sameColor(a.sc, b.sc))) return 'circle size/stroke';
