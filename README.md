@@ -53,6 +53,8 @@ same render as an Esri renderer for clients that only read ArcGIS FeatureServer 
 Viewer, Experience Builder, StoryMaps). It runs the GL fragment through MapLibre's evaluator for each
 distinct value in the live GeoParquet, so it needs no per-style work. A module can hand-write its
 own with an `esri` export when Esri has a closer fit (UCRC by-boxtype uses Esri's pie-chart renderer).
+`npm run oracle` (after `build:esri`) checks each live feature, per zoom, as GL draws it against
+what the Esri JSON draws, and fails CI on any difference not listed as known.
 
 `build:json` produces `dist-json/styles/{layer}/{render}.json` (`{ "layers": [...] }`) and
 `dist-json/index.json` (manifest keyed by `itemId`, the warehouse join key).

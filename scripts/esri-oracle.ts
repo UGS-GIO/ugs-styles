@@ -38,7 +38,12 @@ type Rgba = number[];
 type Obj = Record<string, unknown>;
 
 // Probe/edge mismatches the converter cannot fix yet; anything else fails the run.
-const KNOWN_PROBES: Record<string, string[]> = {};
+const KNOWN_PROBES: Record<string, string[]> = {
+    // Case-folded lookup with a raw fallback: needs the whole GL expression as Arcade.
+    'enmin_ucrc_basins/default': ['stroke color', 'label'],
+    // An unseen hgm_class draws by landform in GL; Esri has one default symbol.
+    'wetlands_llww_descriptions/default': ['fill color'],
+};
 const KNOWN_EDGE: Record<string, string> = {
     'two circles stacked (halo)': 'points draw only the top circle or icon',
     'circle + circle stacked': 'points draw only the top circle or icon',
