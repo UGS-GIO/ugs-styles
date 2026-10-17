@@ -490,7 +490,10 @@ function zoomBuckets(layers: GLLayer[], lo: number, hi: number, sig: (z: number)
         if (op === 'step' && isZoom(a)) stops.forEach((z) => cuts.add(z));
         // Half zooms across a ramp: Esri draws each bucket at one value.
         if (op === 'interpolate' && isZoom(b)) for (let z = Math.min(...stops); z < Math.max(...stops); z += 0.5) cuts.add(z);
-        if (typeof op === 'string' && COMPARE.has(op) && isZoom(a) && isNum(b)) cuts.add(b);
+        if (typeof op === 'string' && COMPARE.has(op)) {
+            if (isZoom(a) && isNum(b)) cuts.add(b);
+            if (isZoom(b) && isNum(a)) cuts.add(a);
+        }
         n.forEach(walk);
     };
     for (const l of layers) {
