@@ -14,7 +14,7 @@
  * Units: GL paints in px, Esri in pt (x0.75). GL dashes are in line widths, CIM dashes in pt.
  */
 import {
-    featureFilter, latest, normalizePropertyExpression,
+    createExpression, featureFilter, latest, normalizePropertyExpression,
     type Feature, type FilterSpecification, type PropertyValueSpecification, type StylePropertySpecification,
 } from '@maplibre/maplibre-gl-style-spec';
 import type { GLLayer } from './layers';
@@ -57,16 +57,17 @@ export const drawLayers = (layers: GLLayer[]): GLLayer[] =>
     layers.filter((l) => FILL_TYPES.has(l.type ?? '') || isIcon(l));
 
 /** Every attribute a layer reads: `["get", f]` in expressions and legacy `[op, f, v]` filters. */
+const LEGACY = new Set(['==', '!=', 'in', '!in', 'has', '!has', '<', '<=', '>', '>=']);
+
 export function fieldsOf(layers: GLLayer[]): string[] {
     const out = new Set<string>();
-    const legacy = new Set(['==', '!=', 'in', '!in', 'has', '!has', '<', '<=', '>', '>=']);
     const walk = (n: unknown): void => {
         if (!isList(n)) return;
         const [op, arg] = n;
         if (op === 'get' && typeof arg === 'string' && n.length === 2) out.add(arg);
         // Legacy filters are flat (["in", "field", "a", "b"]); expression `in` nests (["in", "a", [...]]).
         const flat = n.slice(1).every((x) => !isList(x));
-        if (typeof op === 'string' && legacy.has(op) && flat && typeof arg === 'string' && !arg.startsWith('$')) out.add(arg);
+        if (typeof op === 'string' && LEGACY.has(op) && flat && typeof arg === 'string' && !arg.startsWith('$')) out.add(arg);
         n.forEach(walk);
     };
     for (const l of layers) {
@@ -253,7 +254,10 @@ export function toArcade(e: unknown): string | null {
         case 'downcase': return all(sub) ? `Lower(${sub.join('')})` : null;
         case 'upcase': return all(sub) ? `Upper(${sub.join('')})` : null;
         case 'concat': return all(sub) ? sub.join(' + ') : null;
-        case 'coalesce': return all(sub) ? sub.reduceRight((acc, s) => `DefaultValue(${s}, ${acc})`) : null;
+        // DefaultValue also replaces '', which GL keeps; that only agrees when the fallback is ''.
+        case 'coalesce': return all(sub)
+            ? sub.reduceRight((acc, s) => (acc === "''" ? `DefaultValue(${s}, '')` : `IIf(${s} == null, ${acc}, ${s})`))
+            : null;
         case 'literal': return typeof args[0] === 'string' ? arcadeString(args[0]) : null;
         default: return null;
     }
@@ -339,6 +343,60 @@ export function toLabels(layers: GLLayer[], geometry: Geometry, rows: Props[], w
         for (const g of groups.values()) out.push({ ...base, where: whereFor(fields, g.tuples), symbol: g.symbol });
     }
     return out;
+}
+
+// ── class keys ──────────────────────────────────────────────────────────────
+
+const NULL = '<Null>';
+const NORMALIZERS = new Set(['to-string', 'string', 'coalesce', 'downcase', 'upcase']);
+const text = (v: unknown): string =>
+    (typeof v === 'string' || isNum(v) || typeof v === 'boolean' ? String(v) : NULL);
+const featureRef = (f: string) => (/^\w+$/.test(f) ? `$feature.${f}` : `$feature[${arcadeString(f)}]`);
+
+/** The wrapper GL puts around every read of `name` (to-string, coalesce to text, case), else null. */
+function normalizerOf(layers: GLLayer[], name: string): unknown[] | null {
+    const seen = new Set<string>();
+    const walk = (n: unknown, up: unknown[][]): void => {
+        if (!isList(n)) return;
+        const [op, arg] = n;
+        if (typeof op === 'string' && LEGACY.has(op) && arg === name && n.slice(1).every((x) => !isList(x))) seen.add('raw');
+        if (op === 'get' && arg === name && n.length === 2) {
+            let top: unknown[] = n;
+            for (const p of [...up].reverse()) {
+                const pop = p[0];
+                if (typeof pop !== 'string' || !NORMALIZERS.has(pop) || p[1] !== top) break;
+                if (pop === 'coalesce' && !p.slice(2).every((x) => typeof x === 'string')) break;
+                top = p;
+            }
+            seen.add(JSON.stringify(top));
+        }
+        n.forEach((c) => walk(c, [...up, n]));
+    };
+    for (const l of layers) {
+        [l.filter, ...Object.values(l.paint ?? {}), l.layout?.['icon-image'], l.layout?.['icon-size']].forEach((x) => walk(x, []));
+    }
+    const [only, ...rest] = seen;
+    const parsed: unknown = only === undefined || rest.length || only === 'raw' ? null : JSON.parse(only);
+    return isList(parsed) && parsed[0] !== 'get' ? parsed : null;
+}
+
+type Part = { field: string; key: (v: Props[string]) => string; arcade: string; folds: boolean };
+
+/** One class field as Esri reads it: raw, or through the style's own normalization. */
+function partFor(layers: GLLayer[], field: string): Part {
+    const raw: Part = { field, key: (v) => (v === null ? NULL : text(v)), folds: false,
+        arcade: `IIf(${featureRef(field)} == null, '${NULL}', Text(${featureRef(field)}))` };
+    const norm = normalizerOf(layers, field);
+    const parsed = norm && createExpression(norm);
+    const arcade = norm && toArcade(norm);
+    if (parsed?.result !== 'success' || !arcade) return raw;
+    const expr = parsed.value;
+    const key = (v: Props[string]) => {
+        const out: unknown = expr.evaluate({ zoom: SIZE_ZOOM }, { type: 1, properties: { [field]: v } });
+        return out == null ? NULL : text(out);
+    };
+    const folds = /"(downcase|upcase)"/.test(JSON.stringify(norm));
+    return { field, key, folds, arcade: key(null) === NULL ? `DefaultValue(${arcade}, '${NULL}')` : arcade };
 }
 
 // ── renderers ───────────────────────────────────────────────────────────────
@@ -434,7 +492,7 @@ export function toRenderer(
     const maxScale = Number.isFinite(maxzoom) ? zoomToScale(maxzoom) : undefined;
     const done = (renderer: Json): Renderer => ({ renderer, labelingInfo, minScale, maxScale, warnings });
 
-    const [first, second, third] = fields;
+    const [first] = fields;
     if (first === undefined) {
         const symbol = symbolFor(layers, {}, geometry, SIZE_ZOOM, icon);
         // Esri shows the layer name beside an unlabelled symbol, which beats an internal title.
@@ -477,8 +535,24 @@ export function toRenderer(
     }
 
     if (tuples.size > MAX_TUPLES) warnings.push(`${tuples.size} distinct values; legend capped at ${MAX_TUPLES}`);
-    if (fields.length > 3) warnings.push(`classes on ${fields.length} fields; Esri keys on 3 at most`);
-    const keyFields = [first, second, third].filter((f) => f !== undefined);
+
+    // Keys: plain fields when GL compares raw values, else Arcade applying GL's own normalization.
+    const normalized = fields.map((f) => partFor(layers, f));
+    const asExpression = fields.length > 3 || normalized.some((p) => p.folds);
+    const parts = asExpression ? normalized : normalized.map((p) => partFor([], p.field));
+    const data = [...tuples.values()].slice(0, MAX_TUPLES);
+    // Values the data lacks yet: legend codes, and '' for null and back. Kept where GL draws them
+    // other than the default symbol does.
+    const flip = (v: Props[string]) => (v === null ? '' : v === '' ? null : v);
+    const extra: Props[] = [
+        ...(fields.length === 1 ? (legend ?? []).flatMap((e) => e.values ?? []).map((v) => ({ [first]: v.value })) : []),
+        ...data.flatMap((t) => parts.filter((p) => p.key(null) !== p.key('')).map((p) => ({ ...t, [p.field]: flip(t[p.field] ?? null) }))),
+    ];
+    const other = symbolFor(layers, Object.fromEntries(fields.map((f) => [f, OTHER])), geometry, SIZE_ZOOM, icon);
+    const fallback = JSON.stringify(other?.json ?? null);
+    const keysOf = (t: Props) => parts.map((p) => p.key(t[p.field] ?? null));
+    const delimiter = DELIMITERS.find((d) => !data.concat(extra).some((t) => keysOf(t).some((k) => k.includes(d)))) ?? '\u001f';
+    const keyOf = (t: Props) => keysOf(t).join(delimiter);
 
     // Group tuples by the symbol they evaluate to: one legend class per distinct symbol.
     // Legends written one entry per filtered layer (qfaults: color and dash per class) align by index.
@@ -488,47 +562,51 @@ export function toRenderer(
         const i = filtered.findIndex((l) => passes(l, t, geometry, SIZE_ZOOM));
         return i < 0 ? undefined : i;
     };
-    const groups = new Map<string, { symbol: Symbol; values: string[][]; idx: number; at?: number }>();
-    const hidden: string[][] = [];
-    for (const t of [...tuples.values()].slice(0, MAX_TUPLES)) {
+    type Group = { symbol: Symbol | null; keys: Set<string>; raw: string[][]; idx: number; at?: number };
+    const groups = new Map<string, Group>();
+    const owner = new Map<string, string>();
+    for (const [i, t] of [...data, ...extra].entries()) {
+        const key = keyOf(t);
         const symbol = symbolFor(layers, t, geometry, SIZE_ZOOM, icon);
-        if (!symbol) {
-            hidden.push(keyFields.map((f) => String(t[f] ?? '<Null>')));
+        const sym = JSON.stringify(symbol?.json ?? null);
+        if (i >= data.length && sym === fallback) continue;
+        if (owner.has(key)) {
+            if (i < data.length && owner.get(key) !== sym) warnings.push(`key ${key} draws two ways; GL normalization not mirrored`);
             continue;
         }
-        const key = JSON.stringify(symbol.json);
-        const g = groups.get(key) ?? { symbol, values: [], idx: groups.size, at: aligned(t) };
-        g.values.push(keyFields.map((f) => String(t[f] ?? '<Null>')));
-        groups.set(key, g);
+        owner.set(key, sym);
+        const g = groups.get(sym) ?? { symbol, keys: new Set(), raw: [], idx: groups.size, at: aligned(t) };
+        g.keys.add(key);
+        g.raw.push(fields.map((f) => String(t[f] ?? NULL)));
+        groups.set(sym, g);
     }
-    const other = symbolFor(layers, Object.fromEntries(fields.map((f) => [f, OTHER])), geometry, SIZE_ZOOM, icon);
-    const delimiter = DELIMITERS.find((d) => ![...groups.values()].flatMap((g) => g.values).concat(hidden)
-        .some((v) => v.some((x) => x.includes(d)))) ?? '\u001f';
 
-    const classes = [...groups.values()].map((g) => {
-        const firsts = g.values.map(([v]) => v ?? '');
-        const shown = (v: string) => (v === '' ? '(blank)' : v === '<Null>' ? '(no value)' : v);
-        const listed = [...new Set(g.values.map((v) => v.map((x) => shown(x.trim())).join(', ')))];
-        return {
+    const classes = [...groups.values()].flatMap((g) => {
+        // Under a default symbol, values GL leaves undrawn need a class that draws nothing.
+        if (!g.symbol) return other ? [{ label: 'Not drawn', symbol: emptySymbol(geometry), keys: g.keys, order: Infinity }] : [];
+        const firsts = g.raw.map(([v]) => v ?? '');
+        const shown = (v: string) => (v === '' ? '(blank)' : v === NULL ? '(no value)' : v);
+        const listed = [...new Set(g.raw.map((v) => v.map((x) => shown(x.trim())).join(', ')))];
+        return [{
             label: (g.at === undefined ? undefined : legend?.[g.at]?.label)
                 ?? legendLabel(legend, g.symbol, firsts)
                 ?? listed.slice(0, 4).join('; ') + (listed.length > 4 ? '…' : ''),
             symbol: g.symbol.json,
-            values: g.values,
+            keys: g.keys,
             order: g.at ?? legendIndex(legend, g.symbol, firsts) ?? 1000 + g.idx,
-        };
+        }];
     }).sort((a, b) => a.order - b.order);
-    // Under a default symbol, values GL leaves undrawn need a class that draws nothing.
-    if (other && hidden.length) classes.push({ label: 'Not drawn', symbol: emptySymbol(geometry), values: hidden, order: Infinity });
+    const split = (k: string) => (asExpression ? [k] : k.split(delimiter));
+    const [second, third] = fields.slice(1);
+    const keying: Record<string, Json> = asExpression
+        ? { valueExpression: parts.map((p) => p.arcade).join(` + ${arcadeString(delimiter)} + `), valueExpressionTitle: fields.join(', ') }
+        : { field1: first, ...(second === undefined ? {} : { field2: second }), ...(third === undefined ? {} : { field3: third }), fieldDelimiter: delimiter };
 
     return done({
         type: 'uniqueValue',
-        field1: first,
-        ...(second === undefined ? {} : { field2: second }),
-        ...(third === undefined ? {} : { field3: third }),
-        fieldDelimiter: delimiter,
-        uniqueValueGroups: [{ classes: classes.map(({ label, symbol, values: v }) => ({ label, symbol, values: v })) }],
-        uniqueValueInfos: classes.flatMap(({ label, symbol, values: v }) => v.map((x) => ({ value: x.join(delimiter), label, symbol }))),
+        ...keying,
+        uniqueValueGroups: [{ classes: classes.map(({ label, symbol, keys }) => ({ label, symbol, values: [...keys].map(split) })) }],
+        uniqueValueInfos: classes.flatMap(({ label, symbol, keys }) => [...keys].map((value) => ({ value, label, symbol }))),
         // What GL draws for a value added after this build.
         ...(other ? { defaultSymbol: other.json, defaultLabel: classes.some((c) => c.label === 'Other') ? 'Other values' : 'Other' } : {}),
         ...vv,
