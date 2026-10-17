@@ -1,7 +1,7 @@
 /**
  * Write an Esri renderer next to every vector render build-json emitted (src/esri.ts).
  *
- * Output: dist-json/esri/{layer}/{render}.json  — { renderer, labelingInfo?, minScale? }
+ * Output: dist-json/esri/{layer}/{render}.json  — { renderer, labelingInfo?, minScale?, maxScale? }
  *         index.json entries gain `esri` (the path), so a FeatureServer finds it by item id.
  *
  * Reads only the styled columns of each layer's GeoParquet, for the distinct values to classify,
@@ -128,6 +128,7 @@ const main = async () => {
             renderer: out.renderer,
             ...(out.labelingInfo.length ? { labelingInfo: out.labelingInfo } : {}),
             ...(out.minScale ? { minScale: out.minScale } : {}),
+            ...(out.maxScale ? { maxScale: out.maxScale } : {}),
         }));
         entry.esri = rel;
         written++;

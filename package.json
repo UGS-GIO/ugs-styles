@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "gen:boxtype-membership": "tsx scripts/gen-boxtype-membership.ts",
     "build:esri": "tsx scripts/build-esri.ts",
+    "oracle": "tsx scripts/esri-oracle.ts",
     "test": "tsx --test src/*.test.ts"
   },
   "peerDependencies": {
