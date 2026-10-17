@@ -1,5 +1,6 @@
 // Seeded from live GeoServer: energy_mineral:enmin_pipelines_current (WMS GetStyles → geostyler, one-time capture).
 // GeoServer is retiring — this committed module is now the source of truth; edit freely.
+import type { FilterSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -8,7 +9,22 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "energy_minerals_pipelines_current",
+    // Labels from the GeoServer SLD rule titles, colors from the rules below.
+    legend: [
+        { label: 'CO2', color: '#7d079a' },
+        { label: 'Crude Oil', color: '#33a02c' },
+        { label: 'Natural Gas', color: '#e31a1c' },
+        { label: 'Petroleum Products', color: '#6bff08' },
+        { label: 'Other', color: '#999999' },
+    ],
 } satisfies Binding & { render: string };
+
+// The SLD's last rule ("Other") is an <ElseFilter/>, which the seed dropped: unfiltered, its gray
+// line drew over every pipeline. It applies only to commodities no rule above names.
+const NAMED = ['carbon dioxide', 'carbon dioxide (co2)', 'crude oil', 'petroleum', 'petroleum (20 mb/d)',
+    'liquid natural gas', 'liquified petroleum gases (lpg)', 'natural gas', 'hydrogen sulfide bearing product',
+    'gas gathering', 'petroleum product', 'petroleum products'];
+const OTHER: FilterSpecification = ['!', ['in', ['downcase', ['to-string', ['get', 'commodity']]], ['literal', NAMED]]];
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
 const layers: StyleLayer[] = [
@@ -459,6 +475,7 @@ const layers: StyleLayer[] = [
     {
         "id": "enmin_pipelines-8",
         "type": "line",
+        "filter": OTHER,
         "paint": {
             "line-width": 4
         },
@@ -469,6 +486,7 @@ const layers: StyleLayer[] = [
     {
         "id": "enmin_pipelines-9",
         "type": "line",
+        "filter": OTHER,
         "paint": {
             "line-color": "#999999",
             "line-width": 3

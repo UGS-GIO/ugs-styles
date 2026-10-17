@@ -71,6 +71,9 @@ const codes: ExpressionSpecification = [
 ];
 
 // icon-image = `box-type-<the well's exact codes>`, matching a baked sprite.
+// The sprite icons grow with zoom (icon-size 0.15 -> 0.7 of a 40px cell); same ramp, as Esri scale.
+const ICON_SIZE: [number, number][] = [[4, 0.15], [7, 0.275], [10, 0.4], [13, 0.55], [16, 0.7]];
+
 const iconImage: ExpressionSpecification = ['concat', `${UCRC_BOX_TYPE_NAMESPACE}-`, codes];
 
 // Draw CORE wells on top of every other box type: with icon-allow-overlap, a higher
@@ -87,10 +90,41 @@ const layers: StyleLayer[] = [
             'icon-image': iconImage,
             // Sized to match the by-purpose circles: the sprite disc is 40px @1x, so
             // icon-size = (2 × that render's circle-radius) / 40 at each stop.
-            'icon-size': interpolateByZoom([[4, 0.15], [7, 0.275], [10, 0.4], [13, 0.55], [16, 0.7]]),
+            'icon-size': interpolateByZoom(ICON_SIZE),
             'icon-allow-overlap': true,
             'symbol-sort-key': coreOnTop,
         },
     },
 ];
 export default layers;
+
+// Esri has no sprite pies, but it has a pie-chart renderer: one wedge per group the well holds,
+// with a three-entry legend like this render's. Codes outside Core and Cuttings count as Other.
+const arcadeHas = (g: UcrcBoxGroup): string => {
+    // Upper-cased like the codes they are tested against.
+    const known = JSON.stringify([...groupValues('CORE'), ...groupValues('CUTTINGS')].map((v) => v.value.toUpperCase()));
+    const mine = JSON.stringify(groupValues(g).map((v) => v.value.toUpperCase()));
+    const test = g === 'OTHER' ? `!Includes(${known}, Trim(c))` : `Includes(${mine}, Trim(c))`;
+    return `var codes = Split(Upper(DefaultValue($feature.box_type_codes, '')), ',');
+if (Count(codes) == 0 || codes[0] == '') { return ${g === 'OTHER' ? 1 : 0} }
+for (var i in codes) { var c = codes[i]; if (${test}) { return 1 } }
+return 0`;
+};
+const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16)).concat(255);
+
+export const esri = {
+    renderer: {
+        type: 'pieChart',
+        attributes: UCRC_BOX_GROUP_ORDER.map((g) => ({
+            label: GROUP_LABELS[g], color: rgb(UCRC_BOX_GROUP_COLORS[g]), valueExpression: arcadeHas(g),
+        })),
+        holePercentage: 0,
+        size: 8,
+        outline: { type: 'esriSLS', style: 'esriSLSSolid', color: [68, 68, 68, 255], width: 0.5 },
+        othersCategory: { threshold: 0, color: rgb(UCRC_BOX_GROUP_COLORS.OTHER), label: 'Other' },
+        // Stops in ascending scale, as Esri requires: the reverse of zoom order.
+        visualVariables: [{ type: 'sizeInfo', valueExpression: '$view.scale',
+            stops: ICON_SIZE.map(([z, s]) => ({ value: 295828763.7957775 / 2 ** z, size: 40 * s * 0.75 }))
+                .sort((a, b) => a.value - b.value) }],
+    },
+};
