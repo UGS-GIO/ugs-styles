@@ -25,6 +25,7 @@ import {
 } from '@maplibre/maplibre-gl-style-spec';
 import { toRenderer, type Geometry, type Legend } from '../src/esri';
 import type { GLLayer } from '../src/layers';
+import { withRetries } from './geoparquet';
 
 const OUT = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'dist-json');
 const BASE = (process.env.GEOPARQUET_BASE ?? 'https://maps-assets.geology.utah.gov/warehouse').replace(/\/+$/, '');
@@ -499,7 +500,7 @@ async function live(filter: string): Promise<{ live: number; failures: string[] 
         if (!isObj(doc)) continue;
         const fields = refs(layers);
         const src = `${BASE}/geoparquet/${e.itemId}/${e.itemId}.parquet`;
-        const file = src.startsWith('http') ? await asyncBufferFromUrl({ url: src }) : await asyncBufferFromFile(src);
+        const file = await withRetries(() => src.startsWith('http') ? asyncBufferFromUrl({ url: src }) : asyncBufferFromFile(src));
         const meta = await parquetMetadataAsync(file);
         const geo: unknown = JSON.parse(meta.key_value_metadata?.find((m) => m.key === 'geo')?.value ?? '{}');
         const primary = get(geo, 'primary_column');
@@ -589,6 +590,8 @@ async function edgeCases(): Promise<Case[]> {
             rows: [{}] },
         { name: 'zoom filter', g: 'line',
             layers: [{ id: 'l', type: 'line', filter: ['>=', ['zoom'], 12], paint: { 'line-color': '#f00' } }], rows: [{}] },
+        { name: 'zoom filter, operands reversed', g: 'line',
+            layers: [{ id: 'l', type: 'line', filter: ['<=', 12, ['zoom']], paint: { 'line-color': '#f00' } }], rows: [{}] },
         { name: 'whole style above a minzoom', g: 'polygon', layers: [fill({ 'fill-color': '#f00' }, { minzoom: 11 })], rows: [{}] },
         { name: 'whole style below a maxzoom', g: 'polygon', layers: [fill({ 'fill-color': '#f00' }, { maxzoom: 12 })], rows: [{}] },
         { name: 'circle-radius step on zoom', g: 'point',
