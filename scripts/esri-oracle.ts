@@ -40,8 +40,6 @@ type Obj = Record<string, unknown>;
 
 // Probe/edge mismatches the converter cannot fix yet; anything else fails the run.
 const KNOWN_PROBES: Record<string, string[]> = {
-    // Case-folded lookup with a raw fallback: needs the whole GL expression as Arcade.
-    'enmin_ucrc_basins/default': ['stroke color', 'label'],
     // An unseen hgm_class draws by landform in GL; Esri has one default symbol.
     'wetlands_llww_descriptions/default': ['fill color'],
 };
@@ -545,6 +543,7 @@ const dot: GLLayer = { id: 'c', type: 'circle', paint: { 'circle-color': '#f00' 
 const label = (field: unknown, extra: GLLayer = {}): GLLayer => ({ id: 't', type: 'symbol', layout: { 'text-field': field }, ...extra });
 const range = (n: number, f: (i: number) => Props) => Array.from({ length: n }, (_, i) => f(i));
 const downcased = ['downcase', ['coalesce', ['to-string', ['get', 'k']], '']];
+const display = ['coalesce', ['get', downcased, ['literal', { 'x a': 'A', a: 'A' }]], ['to-string', ['coalesce', ['get', 'k'], '']]];
 
 async function edgeCases(): Promise<Case[]> {
     const cases: Case[] = [
@@ -572,6 +571,10 @@ async function edgeCases(): Promise<Case[]> {
         { name: 'case-insensitive match, unseen case variant', g: 'polygon',
             layers: [fill({ 'fill-color': ['match', downcased, 'a', '#f00', '#00f'] })],
             rows: [{ k: 'A' }, { k: 'b' }], probes: [{ k: 'a' }, { k: 'B' }, { k: null }, { k: 'new' }] },
+        { name: 'case-folded lookup with a raw fallback', g: 'line',
+            layers: [{ id: 'l', type: 'line', paint: { 'line-color': ['match', display, 'A', '#f00', '#00f'] } },
+                label(display, { paint: { 'text-color': ['match', display, 'A', '#f00', '#888'] } })],
+            rows: [{ k: 'x a' }, { k: 'b' }], probes: [{ k: 'X A' }, { k: 'a' }, { k: 'B' }, { k: 'new' }, { k: null }, { k: '' }] },
         { name: 'null and blank drawn alike', g: 'polygon',
             layers: [fill({ 'fill-color': ['match', ['coalesce', ['get', 'k'], ''], '', '#888', 'a', '#f00', '#00f'] })],
             rows: [{ k: 'a' }, { k: null }], probes: [{ k: '' }] },
