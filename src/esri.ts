@@ -230,39 +230,71 @@ export function symbolFor(
 // ── labels ──────────────────────────────────────────────────────────────────
 
 const arcadeString = (s: string) => JSON.stringify(s);
+const featureRef = (f: string) => (/^\w+$/.test(f) ? `$feature.${f}` : `$feature[${arcadeString(f)}]`);
+const BLANK = arcadeString('');
+const scalar = (v: unknown): string | null => (typeof v === 'string' ? arcadeString(v)
+    : isNum(v) || typeof v === 'boolean' ? String(v) : v === null ? 'null' : null);
 
-/** The GL text expressions styles actually use, as Arcade. null = no faithful translation. */
+/** A GL expression as Arcade, for the subset styles use. null = no faithful translation. */
 export function toArcade(e: unknown): string | null {
-    if (typeof e === 'string') {
-        // Legacy token strings: "{name}" or "Sec {num}".
-        const parts = e.split(/(\{[^}]+\})/).filter(Boolean)
-            .map((p) => (p.startsWith('{') ? `DefaultValue($feature.${p.slice(1, -1)}, '')` : arcadeString(p)));
-        return parts.length ? parts.join(' + ') : "''";
-    }
-    if (isNum(e)) return String(e);
-    if (!isList(e)) return null;
+    if (typeof e !== 'string') return arcadeOf(e);
+    // Legacy token strings, as a whole text-field only: "{name}" or "Sec {num}".
+    const parts = e.split(/(\{[^}]+\})/).filter(Boolean)
+        .map((p) => (p.startsWith('{') ? `DefaultValue(${featureRef(p.slice(1, -1))}, '')` : arcadeString(p)));
+    return parts.length ? parts.join(' + ') : "''";
+}
+
+// `["get", key, ["literal", {...}]]` as Decode, giving `fallback` for keys the object lacks.
+function lookup(e: unknown, fallback: string): string | null {
+    if (!isList(e) || e[0] !== 'get' || e.length !== 3 || !isList(e[2]) || e[2][0] !== 'literal') return null;
+    const [key, obj] = [arcadeOf(e[1]), e[2][1]];
+    if (key === null || typeof obj !== 'object' || obj === null || isList(obj)) return null;
+    const pairs = Object.entries(obj).flatMap(([from, to]) => [arcadeString(from), scalar(to)]);
+    return pairs.every((p) => p !== null) ? `Decode(${[key, ...pairs, fallback].join(', ')})` : null;
+}
+
+// GL's to-string: null reads as ''; a `coalesce` ending in '' is never null.
+const asText = (gl: unknown, s: string) => (typeof gl === 'string' ? s
+    : `Text(${isList(gl) && gl[0] === 'coalesce' && gl.at(-1) === '' ? s : `DefaultValue(${s}, '')`})`);
+
+function arcadeOf(e: unknown): string | null {
+    if (!isList(e)) return scalar(e);
     const [op, ...args] = e;
-    const sub = args.map(toArcade);
-    const all = (xs: (string | null)[]): xs is string[] => xs.every((x) => x !== null);
-    switch (op) {
-        case 'get': {
-            const [key, obj] = args;
-            if (typeof key === 'string' && args.length === 1) return `$feature.${key}`;
-            const lit = isList(obj) && obj[0] === 'literal' ? obj[1] : undefined;
-            const k = toArcade(key);
-            if (k === null || typeof lit !== 'object' || lit === null) return null;
-            const pairs = Object.entries(lit).flatMap(([from, to]) => [arcadeString(from), arcadeString(String(to))]);
-            return `Decode(${k}, ${pairs.join(', ')}, null)`;
+    if (op === 'literal') return scalar(args[0]);
+    if (op === 'get' && args.length === 2) return lookup(e, 'null');
+    if (op === 'match') {
+        // Labels are bare values (or lists of them), not expressions.
+        const [input, ...rest] = args;
+        const out = [arcadeOf(input)];
+        for (let i = 0; i + 1 < rest.length; i += 2) {
+            const labels = rest[i];
+            for (const l of isList(labels) ? labels : [labels]) out.push(scalar(l), arcadeOf(rest[i + 1]));
         }
-        case 'to-string': return all(sub) ? `Text(DefaultValue(${sub.join('')}, ''))` : null;
-        case 'downcase': return all(sub) ? `Lower(${sub.join('')})` : null;
-        case 'upcase': return all(sub) ? `Upper(${sub.join('')})` : null;
-        case 'concat': return all(sub) ? sub.join(' + ') : null;
-        // DefaultValue also replaces '', which GL keeps; that only agrees when the fallback is ''.
-        case 'coalesce': return all(sub)
-            ? sub.reduceRight((acc, s) => (acc === "''" ? `DefaultValue(${s}, '')` : `IIf(${s} == null, ${acc}, ${s})`))
-            : null;
-        case 'literal': return typeof args[0] === 'string' ? arcadeString(args[0]) : null;
+        out.push(arcadeOf(rest.at(-1)));
+        return out.every((x) => x !== null) ? `Decode(${out.join(', ')})` : null;
+    }
+    const sub = args.map(arcadeOf);
+    if (!sub.every((x) => x !== null)) return null;
+    const [a, b] = sub;
+    switch (op) {
+        case 'get': return typeof args[0] === 'string' && args.length === 1 ? featureRef(args[0]) : null;
+        case 'to-string': return a !== undefined && args.length === 1 ? asText(args[0], a) : null;
+        case 'string': return a !== undefined && args.length === 1 ? a : null;
+        case 'downcase': return a === undefined ? null : `Lower(${a})`;
+        case 'upcase': return a === undefined ? null : `Upper(${a})`;
+        case 'concat': return sub.map((s, i) => asText(args[i], s)).join(' + ');
+        // DefaultValue and IsEmpty also replace '', which GL keeps: only a '' fallback agrees.
+        case 'coalesce': return args.reduceRight<string>((acc, x, i) => {
+            const s = sub[i] ?? 'null';
+            if (acc === 'null') return s;
+            return lookup(x, acc) ?? (acc === BLANK ? `DefaultValue(${s}, '')` : `IIf(${s} == null, ${acc}, ${s})`);
+        }, 'null');
+        case 'case': return `When(${sub.join(', ')})`;
+        case '!': return `!(${a})`;
+        case 'all': return sub.length ? `(${sub.join(' && ')})` : 'true';
+        case 'any': return sub.length ? `(${sub.join(' || ')})` : 'false';
+        case '==': case '!=': case '<': case '<=': case '>': case '>=':
+            return args.length === 2 ? `(${a} ${op} ${b})` : null;
         default: return null;
     }
 }
@@ -331,19 +363,40 @@ export function toLabels(layers: GLLayer[], geometry: Geometry, rows: Props[], w
             continue;
         }
 
+        const parts = fields.map((f) => partFor([l], f));
+        const folds = parts.some((p) => p.folds);
         const tuples = new Map<string, Props>();
         for (const row of rows) {
             const t: Props = Object.fromEntries(fields.map((f) => [f, row[f] ?? null]));
             tuples.set(JSON.stringify(fields.map((f) => t[f])), t);
         }
+        const unseen: Props = Object.fromEntries(fields.map((f) => [f, OTHER]));
+        const all = [...tuples.values(), ...(folds ? [unseen] : [])];
         const groups = new Map<string, { symbol: Json; tuples: Props[] }>();
-        for (const t of tuples.values()) {
+        for (const t of all) {
             if (!passes(l, t, geometry, zoom)) continue;
             const sym = symbol(t);
             const key = JSON.stringify(sym);
             const g = groups.get(key) ?? { symbol: sym, tuples: [] };
             g.tuples.push(t);
             groups.set(key, g);
+        }
+        if (folds) {
+            // SQL can't fold case like GL, so each class's Arcade blanks the keys it doesn't draw;
+            // the class an unseen value falls in lists the others' keys instead of its own.
+            const keysOf = (t: Props) => parts.map((p) => p.key(t[p.field] ?? null));
+            const d = delimiterFor(all.map(keysOf));
+            const keyArcade = parts.map((p) => p.arcade).join(` + ${arcadeString(d)} + `);
+            const keys = new Set(all.map((t) => keysOf(t).join(d)));
+            for (const g of groups.values()) {
+                const mine = new Set(g.tuples.map((t) => keysOf(t).join(d)));
+                const isDefault = g.tuples.includes(unseen);
+                const listed = isDefault ? [...keys].filter((k) => !mine.has(k)) : [...mine];
+                const decode = [keyArcade, ...listed.flatMap((k) => [arcadeString(k), String(!isDefault)]), String(isDefault)];
+                const shown = listed.length ? `IIf(Decode(${decode.join(', ')}), ${expression}, '')` : expression;
+                out.push({ ...base, labelExpressionInfo: { expression: shown }, symbol: g.symbol });
+            }
+            continue;
         }
         for (const g of groups.values()) out.push({ ...base, where: whereFor(fields, g.tuples), symbol: g.symbol });
     }
@@ -354,31 +407,46 @@ export function toLabels(layers: GLLayer[], geometry: Geometry, rows: Props[], w
 
 const NULL = '<Null>';
 const NORMALIZERS = new Set(['to-string', 'string', 'coalesce', 'downcase', 'upcase']);
+const KEY_OPS = new Set([...NORMALIZERS, 'get', 'concat']);
 const text = (v: unknown): string =>
     (typeof v === 'string' || isNum(v) || typeof v === 'boolean' ? String(v) : NULL);
-const featureRef = (f: string) => (/^\w+$/.test(f) ? `$feature.${f}` : `$feature[${arcadeString(f)}]`);
 
-/** The wrapper GL puts around every read of `name` (to-string, coalesce to text, case), else null. */
+/** The wrapper GL puts around every read of `name` (to-string, coalesce to text, case, a lookup
+ * with a raw fallback), else null. */
 function normalizerOf(layers: GLLayer[], name: string): unknown[] | null {
     const seen = new Set<string>();
-    const walk = (n: unknown, up: unknown[][]): void => {
-        if (!isList(n)) return;
-        const [op, arg] = n;
-        if (typeof op === 'string' && LEGACY.has(op) && arg === name && n.slice(1).every((x) => !isList(x))) seen.add('raw');
-        if (op === 'get' && arg === name && n.length === 2) {
-            let top: unknown[] = n;
-            for (const p of [...up].reverse()) {
-                const pop = p[0];
-                if (typeof pop !== 'string' || !NORMALIZERS.has(pop) || p[1] !== top) break;
-                if (pop === 'coalesce' && !p.slice(2).every((x) => typeof x === 'string')) break;
-                top = p;
-            }
-            seen.add(JSON.stringify(top));
+    // Built from `name` and literals alone, so every read inside it can share it as one key.
+    const pure = (n: unknown): boolean => !isList(n) || n[0] === 'literal'
+        || (n[0] === 'get' && n.length === 2 ? n[1] === name : typeof n[0] === 'string' && KEY_OPS.has(n[0]) && n.slice(1).every(pure));
+    const climb = (path: unknown[][]): unknown[] => {
+        let top = path.at(-1) ?? [];
+        for (const p of path.slice(0, -1).reverse()) {
+            const pop = p[0];
+            if (typeof pop !== 'string' || !NORMALIZERS.has(pop) || p[1] !== top) break;
+            if (pop === 'coalesce' && !p.slice(2).every((x) => typeof x === 'string')) break;
+            top = p;
         }
-        n.forEach((c) => walk(c, [...up, n]));
+        return top;
     };
     for (const l of layers) {
-        [l.filter, ...Object.values(l.paint ?? {}), l.layout?.['icon-image'], l.layout?.['icon-size']].forEach((x) => walk(x, []));
+        for (const root of [l.filter, ...Object.values(l.paint ?? {}), l.layout?.['icon-image'], l.layout?.['icon-size']]) {
+            const reads: unknown[][][] = [];
+            const walk = (n: unknown, up: unknown[][]): void => {
+                if (!isList(n)) return;
+                const [op, arg] = n;
+                if (typeof op === 'string' && LEGACY.has(op) && arg === name && n.slice(1).every((x) => !isList(x))) seen.add('raw');
+                if (op === 'get' && arg === name && n.length === 2) reads.push([...up, n]);
+                n.forEach((c) => walk(c, [...up, n]));
+            };
+            walk(root, []);
+            // Reads in one expression key on where they meet, e.g. a case-folded lookup with a raw fallback.
+            const [first] = reads;
+            if (!first) continue;
+            let depth = 0;
+            while (depth < first.length && reads.every((r) => r[depth] === first[depth])) depth++;
+            const shared = first.slice(0, depth);
+            for (const path of pure(shared.at(-1)) ? [shared] : reads) seen.add(JSON.stringify(climb(path)));
+        }
     }
     const [only, ...rest] = seen;
     const parsed: unknown = only === undefined || rest.length || only === 'raw' ? null : JSON.parse(only);
@@ -471,6 +539,7 @@ const below = (x: number): number => {
 
 const OTHER = '\u0000unseen';  // a value no column holds: what GL draws for values added later
 const DELIMITERS = [',', '|', ';', '~', '^'];
+const delimiterFor = (keys: string[][]) => DELIMITERS.find((d) => !keys.some((k) => k.some((x) => x.includes(d)))) ?? '\u001f';
 
 const emptySymbol = (geometry: Geometry): Json => ({ type: 'CIMSymbolReference', symbol: {
     type: { polygon: 'CIMPolygonSymbol', line: 'CIMLineSymbol', point: 'CIMPointSymbol' }[geometry], symbolLayers: [] } });
@@ -604,7 +673,7 @@ export function toRenderer(
     const other = fields.length ? draw(unseen, zoom) : null;
     const fallback = JSON.stringify(other?.json ?? null);
     const keysOf = (t: Props) => parts.map((p) => p.key(t[p.field] ?? null));
-    const delimiter = DELIMITERS.find((d) => !data.concat(extra).some((t) => keysOf(t).some((k) => k.includes(d)))) ?? '\u001f';
+    const delimiter = delimiterFor(data.concat(extra).map(keysOf));
     // Scale-dependent styles lead each key with the zoom bucket the view is in.
     const bucketArcade = buckets.slice(0, -1).map((b, i) => `$view.scale > ${zoomToScale(b.to)}, '${i}'`)
         .concat(`'${buckets.length - 1}'`).join(', ');
