@@ -230,7 +230,7 @@ export function symbolFor(
 // ── labels ──────────────────────────────────────────────────────────────────
 
 const arcadeString = (s: string) => JSON.stringify(s);
-const featureRef = (f: string) => (/^\w+$/.test(f) ? `$feature.${f}` : `$feature[${arcadeString(f)}]`);
+const featureRef = (f: string) => (/^[A-Za-z_]\w*$/.test(f) ? `$feature.${f}` : `$feature[${arcadeString(f)}]`);
 const BLANK = arcadeString('');
 const scalar = (v: unknown): string | null => (typeof v === 'string' ? arcadeString(v)
     : isNum(v) || typeof v === 'boolean' ? String(v) : v === null ? 'null' : null);
@@ -250,6 +250,7 @@ function lookup(e: unknown, fallback: string): string | null {
     const [key, obj] = [arcadeOf(e[1]), e[2][1]];
     if (key === null || typeof obj !== 'object' || obj === null || isList(obj)) return null;
     const pairs = Object.entries(obj).flatMap(([from, to]) => [arcadeString(from), scalar(to)]);
+    if (!pairs.length) return fallback;
     return pairs.every((p) => p !== null) ? `Decode(${[key, ...pairs, fallback].join(', ')})` : null;
 }
 
