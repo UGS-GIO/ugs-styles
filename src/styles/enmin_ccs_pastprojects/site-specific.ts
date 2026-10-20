@@ -11,7 +11,7 @@ import { matchByField } from '../../expressions/categorical';
 import { CCUS_SITESPECIFIC_PROJECTS_FILL } from '../../palettes';
 
 const FIELD = 'namealias';
-const FALLBACK = '#999999';
+const FALLBACK = 'rgba(0,0,0,0)';
 
 export const spec = {
     itemId: 'enmin_ccs_pastprojects',
