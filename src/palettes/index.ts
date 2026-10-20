@@ -11,6 +11,13 @@
  */
 import { UCRC_PURPOSE_FILL, UCRC_PURPOSE_STROKE, WELLS_SPATIAL_PURPOSE_LABELS, pickPurpose } from './ucrc-purpose';
 import { PFDF_DSI, PFDF_LIKELIHOOD } from './pfdf';
+import {
+    CCUS_REGIONAL_PROJECTS_FILL,
+    CCUS_SITESPECIFIC_PROJECTS_FILL,
+    CCUS_ALL_PROJECTS_FILL,
+    CCUS_REGIONAL_RAMP,
+    CCUS_SITESPECIFIC_RAMP,
+} from './ccus-projects';
 
 export type Palette = {
     fill: Record<string, string>;
@@ -197,6 +204,9 @@ export const PALETTES: Record<string, Palette> = {
     'wetlands-decade': { fill: WETLANDS_DECADE_FILL, other: '#CCCCCC' },
     'wetlands-assessment-projects': { fill: WETLANDS_ASSESSMENT_PROJECTS_FILL, other: '#BDBDBD' },
     'wetlands-study-results': { fill: WETLANDS_STUDY_RESULTS_FILL, other: '#BDBDBD' },
+    'ccus-projects-regional': { fill: CCUS_REGIONAL_PROJECTS_FILL, stroke: CCUS_REGIONAL_PROJECTS_FILL, other: '#999999' },
+    'ccus-projects-sitespecific': { fill: CCUS_SITESPECIFIC_PROJECTS_FILL, stroke: CCUS_SITESPECIFIC_PROJECTS_FILL, other: '#999999' },
+    'ccus-projects': { fill: CCUS_ALL_PROJECTS_FILL, stroke: CCUS_ALL_PROJECTS_FILL, other: '#999999' },
 };
 
 // Sequential ramps for `graduated` — ordered low -> high, one stop per class.
@@ -204,4 +214,14 @@ export const RAMPS: Record<string, Ramp> = {
     'pfdf-dsi': PFDF_DSI,
     'pfdf-likelihood': PFDF_LIKELIHOOD,
     'wetlands-stressors': WETLANDS_STRESSORS_RAMP,
+    'ccus-projects-regional': CCUS_REGIONAL_RAMP,
+    'ccus-projects-sitespecific': CCUS_SITESPECIFIC_RAMP,
+};
+
+export {
+    CCUS_REGIONAL_PROJECTS_FILL,
+    CCUS_SITESPECIFIC_PROJECTS_FILL,
+    CCUS_ALL_PROJECTS_FILL,
+    CCUS_REGIONAL_RAMP,
+    CCUS_SITESPECIFIC_RAMP,
 };
