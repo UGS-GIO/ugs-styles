@@ -1,7 +1,9 @@
-// Hand-authored from live GeoServer: energy_mineral:enmin_ccus_georegions_current (GetStyles).
-// The SLD uses a graphic/pattern fill that MapLibre GL can't represent (geostyler: "Mapbox only
-// supports Icons"), so the categorical fill + labels are translated by hand — faithful to the
-// CCUS storage-suitability ramp (ranking: Excellent / Moderate / Limited) + the region name labels.
+/**
+ * Hand-authored from live GeoServer: energy_mineral:enmin_ccus_georegions_current (GetStyles).
+ * The SLD uses a graphic/pattern fill that MapLibre GL can't represent (geostyler: "Mapbox only
+ * supports Icons"), so the categorical fill + labels are translated by hand — faithful to the
+ * CCUS storage-suitability ramp (ranking: Excellent / Moderate / Limited) + the region name labels.
+ */
 import type { Binding, StyleLayer } from '../../types';
 
 // Lowercased `ranking` value -> fill, straight from the SLD.
