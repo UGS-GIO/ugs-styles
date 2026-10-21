@@ -2,6 +2,8 @@
  * CCUS Past and Ongoing Projects — Regional layer.
  *
  * Polygons are styled as borders with no fill using distinct greens.
+ * Handwritten rather than an archetype: the archetypes don't pair an outline with an invisible
+ * fill, which is what makes the whole polygon clickable instead of just its border.
  * Each regional project has a distinct color border keyed by `namealias`.
  * The legend displays only regional project values.
  */
@@ -41,6 +43,14 @@ const layers: StyleLayer[] = [
             'line-color': matchByField(FIELD, CCUS_REGIONAL_PROJECTS_FILL, FALLBACK),
             'line-width': 2,
         },
+    },
+    // Invisible fill so a click anywhere inside a project selects it, not just on its border.
+    // Listed after the line so consumers that read the first layer still see an outline style.
+    {
+        id: 'enmin_ccs_pastprojects-regional-hit',
+        type: 'fill',
+        filter,
+        paint: { 'fill-color': FALLBACK },
     },
 ];
 
