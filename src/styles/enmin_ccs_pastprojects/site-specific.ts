@@ -2,8 +2,7 @@
  * CCUS Past and Ongoing Projects — Site-Specific layer.
  *
  * Polygons are styled as borders with no fill using distinct blues and purples.
- * Handwritten rather than an archetype: the archetypes don't pair an outline with an invisible
- * fill, which is what makes the whole polygon clickable instead of just its border.
+ * Handwritten: no archetype pairs an outline with an invisible fill that makes the inside clickable.
  * Each site-specific project has a distinct color border keyed by `namealias`.
  * The legend displays only site-specific project values.
  */
@@ -44,8 +43,7 @@ const layers: StyleLayer[] = [
             'line-width': 2,
         },
     },
-    // Invisible fill so a click anywhere inside a project selects it, not just on its border.
-    // Listed after the line so consumers that read the first layer still see an outline style.
+    // Hit target only; after the line so consumers reading the first layer still see an outline.
     {
         id: 'enmin_ccs_pastprojects-site-specific-hit',
         type: 'fill',
