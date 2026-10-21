@@ -1,7 +1,7 @@
 /**
  * CCUS Past and Ongoing Projects — Regional layer.
  *
- * Polygons are styled as borders with no fill using an orange scale ramp.
+ * Polygons are styled as borders with no fill using distinct greens.
  * Each regional project has a distinct color border keyed by `namealias`.
  * The legend displays only regional project values.
  */

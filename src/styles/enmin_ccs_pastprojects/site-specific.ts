@@ -1,7 +1,7 @@
 /**
  * CCUS Past and Ongoing Projects — Site-Specific layer.
  *
- * Polygons are styled as borders with no fill using a blue scale ramp.
+ * Polygons are styled as borders with no fill using distinct blues and purples.
  * Each site-specific project has a distinct color border keyed by `namealias`.
  * The legend displays only site-specific project values.
  */
