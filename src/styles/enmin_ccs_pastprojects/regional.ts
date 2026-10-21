@@ -42,6 +42,14 @@ const layers: StyleLayer[] = [
             'line-width': 2,
         },
     },
+    // Invisible fill so a click anywhere inside a project selects it, not just on its border.
+    // Listed after the line so consumers that read the first layer still see an outline style.
+    {
+        id: 'enmin_ccs_pastprojects-regional-hit',
+        type: 'fill',
+        filter,
+        paint: { 'fill-color': '#000000', 'fill-opacity': 0 },
+    },
 ];
 
 export default layers;
