@@ -48,7 +48,7 @@ const layers: StyleLayer[] = [
         id: 'enmin_ccs_pastprojects-regional-hit',
         type: 'fill',
         filter,
-        paint: { 'fill-color': '#000000', 'fill-opacity': 0 },
+        paint: { 'fill-color': FALLBACK },
     },
 ];
 
