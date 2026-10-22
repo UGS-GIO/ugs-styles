@@ -39,10 +39,11 @@ type ManifestEntry = {
     colormap_name?: string; rescale?: [number, number];
     sprite?: string;   // CDN-relative sprite base (no extension) for icon renders (pie wedges)
     glyphs?: string;   // CDN-relative glyph template — present when the render has label layers
-    // Explicit legend: the render's symbology. `values` (grouped renders) = the specific field
-    // values an entry rolls up, each with its own shade; `stroke` = optional swatch outline (flat
-    // renders). Consumers derive colors from here verbatim.
-    legend?: { label: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
+    // Explicit legend: the render's symbology. `value` = the field value a flat entry matches when
+    // `label` is display text; `values` (grouped renders) = the specific field values an entry rolls
+    // up, each with its own shade; `stroke` = optional swatch outline (flat renders). Consumers
+    // derive colors from here verbatim.
+    legend?: { label: string; value?: string; color: string; values?: readonly { value: string; color: string }[]; stroke?: string }[];
     field?: string;    // the feature attribute this render symbolizes (lets consumers wire filters)
     esri?: string;     // CDN-relative Esri renderer: a module's own `esri` export, else build:esri
     esriSource?: 'module';  // the renderer is the module's own; build:esri leaves it alone

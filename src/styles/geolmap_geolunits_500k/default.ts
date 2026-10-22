@@ -29,6 +29,8 @@ const UNIT_FILL = {
     water: '#ffffff', playa: '#ffffff',
 } satisfies Record<string, string>;
 
+const NON_UNIT_LABELS = new Map([['water', 'Water'], ['playa', 'Playa']]);
+
 export const spec = {
     itemId: 'geolmap_geolunits_500k',
     render: 'default',
@@ -36,9 +38,12 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Geologic units (1:500,000)',
     field: 'unitsymbol',
-    // Flat legend: label IS the unit symbol (matches the SLD), swatch is its fill.
-    legend: Object.entries(UNIT_FILL).map(([label, color]) => ({ label, color })),
-} satisfies Binding & { render: string; field: string; legend: { label: string; color: string }[] };
+    // Flat legend: label IS the unit symbol (matches the SLD); the two lowercase non-units get display text.
+    legend: Object.entries(UNIT_FILL).map(([value, color]) => {
+        const label = NON_UNIT_LABELS.get(value);
+        return label ? { label, value, color } : { label: value, color };
+    }),
+} satisfies Binding & { render: string; field: string };
 
 const layers: StyleLayer[] = [
     {
