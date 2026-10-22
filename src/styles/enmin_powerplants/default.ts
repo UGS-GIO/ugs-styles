@@ -16,7 +16,8 @@ const SOURCE_FILL = {
 } satisfies Record<string, string>;
 const FALLBACK = SOURCE_FILL.other;
 
-const SOURCE_LABELS: Record<string, string> = {
+// Every fill needs a label, so a new source can't ship as a raw token.
+const SOURCE_LABELS = {
     'coal': 'Coal',
     'natural gas': 'Natural Gas',
     'petroleum': 'Petroleum',
@@ -26,7 +27,8 @@ const SOURCE_LABELS: Record<string, string> = {
     'geothermal': 'Geothermal',
     'biomass': 'Biomass',
     'other': 'Other',
-};
+} satisfies Record<keyof typeof SOURCE_FILL, string>;
+const labelOf = new Map<string, string>(Object.entries(SOURCE_LABELS));
 
 export const spec = {
     itemId: 'enmin_powerplants',
@@ -36,7 +38,7 @@ export const spec = {
     title: 'Power Plants',
     field: 'primsource',
     legend: Object.entries(SOURCE_FILL).map(([value, color]) => ({
-        label: SOURCE_LABELS[value] ?? value,
+        label: labelOf.get(value) ?? value,
         value,
         color,
     })),
