@@ -16,18 +16,31 @@ const SOURCE_FILL = {
 } satisfies Record<string, string>;
 const FALLBACK = SOURCE_FILL.other;
 
+const SOURCE_LABELS: Record<string, string> = {
+    'coal': 'Coal',
+    'natural gas': 'Natural Gas',
+    'petroleum': 'Petroleum',
+    'hydroelectric': 'Hydroelectric',
+    'wind': 'Wind',
+    'solar': 'Solar',
+    'geothermal': 'Geothermal',
+    'biomass': 'Biomass',
+    'other': 'Other',
+};
+
 export const spec = {
     itemId: 'enmin_powerplants',
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'Power Plants',
-    field: 'primsource',   // the attribute this render symbolizes (consumers wire filters to it)
-    // Flat legend: each entry's label IS the field value, so consumers can join swatch -> feature.
-    // Values stay lowercase because that's what `primsource` holds. Radius encodes total_mw and has
-    // no swatch — a size legend isn't expressible here.
-    legend: Object.entries(SOURCE_FILL).map(([label, color]) => ({ label, color })),
-} satisfies Binding & { render: string; field: string; legend: { label: string; color: string }[] };
+    field: 'primsource',
+    legend: Object.entries(SOURCE_FILL).map(([value, color]) => ({
+        label: SOURCE_LABELS[value] ?? value,
+        value,
+        color,
+    })),
+} satisfies Binding & { render: string; field: string; legend: { label: string; value: string; color: string }[] };
 
 // Downcased so a stray 'Coal' doesn't fall through to grey.
 const source: ExpressionSpecification = ['downcase', ['to-string', ['get', 'primsource']]];

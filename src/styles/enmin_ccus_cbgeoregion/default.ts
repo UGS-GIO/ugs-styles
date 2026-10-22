@@ -7,11 +7,11 @@
 import type { Binding, StyleLayer } from '../../types';
 
 // Lowercased `ranking` value -> fill, straight from the SLD.
-const RANKING_COLORS: Record<string, string> = {
+const RANKING_COLORS = {
     excellent: '#3dc200',
     moderate: '#ffe700',
     limited: '#ff7e00',
-};
+} as const;
 
 export const spec = {
     itemId: 'enmin_ccus_cbgeoregion',
@@ -20,7 +20,11 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'CCUS geo-regions by storage ranking',
     field: 'ranking',
-    legend: Object.entries(RANKING_COLORS).map(([label, color]) => ({ label, color })),
+    legend: [
+        { label: 'Excellent', value: 'excellent', color: RANKING_COLORS.excellent },
+        { label: 'Moderate', value: 'moderate', color: RANKING_COLORS.moderate },
+        { label: 'Limited', value: 'limited', color: RANKING_COLORS.limited },
+    ],
 } satisfies Binding & { render: string; field: string };
 
 // One fill layer per `ranking` value (case-insensitive match — matches the project convention and
