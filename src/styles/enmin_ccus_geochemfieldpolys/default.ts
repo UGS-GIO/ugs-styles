@@ -4,19 +4,23 @@
 // `status` later if wanted.
 import type { Binding, StyleLayer } from '../../types';
 
+const FILL = '#8e7cc3';
+const OUTLINE = '#5e35b1';
+
 export const spec = {
     itemId: 'enmin_ccus_geochemfieldpolys',
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'Geochemistry field areas',
+    legend: [{ label: 'Field with rock property data', color: FILL, stroke: OUTLINE }],
 } satisfies Binding & { render: string };
 
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccus_geochemfieldpolys-fill',
         type: 'fill',
-        paint: { 'fill-color': '#8e7cc3', 'fill-opacity': 0.35, 'fill-outline-color': '#5e35b1' },
+        paint: { 'fill-color': FILL, 'fill-opacity': 0.35, 'fill-outline-color': OUTLINE },
     },
     {
         id: 'enmin_ccus_geochemfieldpolys-label',
