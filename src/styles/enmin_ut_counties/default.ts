@@ -29,14 +29,17 @@ const layers: StyleLayer[] = [
         "type": "symbol",
         "paint": {
             "text-opacity": 1,
-            "text-color": "#000000"
+            "text-color": "#37474f",
+            // Matches enmin_ccus_cbcounty; without a halo the names vanish on satellite
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.2
         },
         "layout": {
             "text-field": "{name}",
             "text-font": [
                 "Noto Sans Regular"
             ],
-            "text-size": 9,
+            "text-size": 11,
             "symbol-placement": "point"
         }
     }
