@@ -48,6 +48,7 @@ const layers: StyleLayer[] = [
             ],
             'circle-stroke-width': 0.5,
             'circle-stroke-color': '#232323',
+            'circle-stroke-opacity': 0.65,
         },
     },
 ];

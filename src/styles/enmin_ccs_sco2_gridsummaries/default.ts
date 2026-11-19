@@ -20,8 +20,10 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
-const hasPercentiles = (): ['all', ['has', string], ['has', string]] => ['all', ['has', 'capacity_percentile'], ['has', 'cost_percentile']];
-const missingPercentiles = (): ['any', ['!', ['has', string]], ['!', ['has', string]]] => ['any', ['!', ['has', 'capacity_percentile']], ['!', ['has', 'cost_percentile']]];
+const hasPercentiles = (): ['all', ['has', string], ['has', string], ['!=', ['get', string], null], ['!=', ['get', string], null]] =>
+    ['all', ['has', 'capacity_percentile'], ['has', 'cost_percentile'], ['!=', ['get', 'capacity_percentile'], null], ['!=', ['get', 'cost_percentile'], null]];
+const missingPercentiles = (): ['any', ['!', ['has', string]], ['!', ['has', string]], ['==', ['get', string], null], ['==', ['get', string], null]] =>
+    ['any', ['!', ['has', 'capacity_percentile']], ['!', ['has', 'cost_percentile']], ['==', ['get', 'capacity_percentile'], null], ['==', ['get', 'cost_percentile'], null]];
 const cap = (): ['to-number', ['get', string]] => ['to-number', ['get', 'capacity_percentile']];
 const cost = (): ['to-number', ['get', string]] => ['to-number', ['get', 'cost_percentile']];
 

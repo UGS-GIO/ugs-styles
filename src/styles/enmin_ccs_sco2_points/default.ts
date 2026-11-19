@@ -23,7 +23,7 @@ const layers: StyleLayer[] = [
         paint: {
             'circle-color': [
                 'step',
-                ['coalesce', ['to-number', ['get', 'storage_cost_doll_per_tco2']], 0],
+                ['to-number', ['coalesce', ['get', 'storage_cost_doll_per_tco2'], 0]],
                 '#00FF00',
                 11.795, '#FFFF00',
                 21.64, '#FFA500',
@@ -33,7 +33,7 @@ const layers: StyleLayer[] = [
             'circle-radius': [
                 'interpolate',
                 ['linear'],
-                ['coalesce', ['to-number', ['get', 'capacity_mtco2']], 4.72],
+                ['to-number', ['coalesce', ['get', 'capacity_mtco2'], 4.72]],
                 4.72, 5,
                 5764.04, 30,
             ],

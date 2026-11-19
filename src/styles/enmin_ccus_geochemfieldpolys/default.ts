@@ -19,7 +19,7 @@ const layers: StyleLayer[] = [
     {
         id: 'enmin_ccus_geochemfieldpolys-fill',
         type: 'fill',
-        paint: { 'fill-color': FILL, 'fill-opacity': 0.35, 'fill-outline-color': OUTLINE },
+        paint: { 'fill-color': FILL, 'fill-opacity': 0.5, 'fill-outline-color': OUTLINE },
     },
 ];
 export default layers;

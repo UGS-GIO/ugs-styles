@@ -1,4 +1,5 @@
 import type { Binding, StyleLayer } from '../../types';
+import { interpolateByZoom } from '../../expressions/categorical';
 
 export const spec = {
     itemId: 'enmin_ccs_majorroads',
@@ -17,7 +18,7 @@ const layers: StyleLayer[] = [
         type: 'line',
         paint: {
             'line-color': '#000000',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1, 10, 1.8, 14, 3],
+            'line-width': interpolateByZoom([[6, 1.6], [10, 2.2], [14, 3]]),
         },
         layout: {
             'line-join': 'bevel',

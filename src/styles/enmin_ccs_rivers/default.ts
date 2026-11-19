@@ -1,4 +1,5 @@
 import type { Binding, StyleLayer } from '../../types';
+import { interpolateByZoom } from '../../expressions/categorical';
 
 export const spec = {
     itemId: 'enmin_ccs_rivers',
@@ -17,7 +18,7 @@ const layers: StyleLayer[] = [
         type: 'line',
         paint: {
             'line-color': '#000000',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.5, 10, 2.5, 14, 3.5],
+            'line-width': interpolateByZoom([[6, 1.8], [10, 2.5], [14, 3.5]]),
         },
         layout: {
             'line-join': 'bevel',
@@ -29,7 +30,7 @@ const layers: StyleLayer[] = [
         type: 'line',
         paint: {
             'line-color': '#6498d2',
-            'line-width': ['interpolate', ['linear'], ['zoom'], 6, 0.8, 10, 1.5, 14, 2.5],
+            'line-width': interpolateByZoom([[6, 1.2], [10, 1.8], [14, 2.6]]),
         },
         layout: {
             'line-join': 'round',

@@ -7,7 +7,7 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Wilderness Study Areas',
     legend: [
-        { label: 'Wilderness Study Areas', color: '#fdff00' },
+        { label: 'Wilderness Study Areas', color: '#fdff00', stroke: '#232323' },
     ],
 } satisfies Binding & { render: string };
 
@@ -17,8 +17,7 @@ const layers: StyleLayer[] = [
         type: 'fill',
         paint: {
             'fill-color': '#fdff00',
-            'fill-opacity': 0.4,
-            'fill-outline-color': '#232323',
+            'fill-opacity': 0.8,
         },
     },
     {

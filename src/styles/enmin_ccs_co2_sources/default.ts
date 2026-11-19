@@ -48,7 +48,7 @@ const layers: StyleLayer[] = [
             'circle-radius': [
                 'interpolate',
                 ['linear'],
-                ['coalesce', ['to-number', ['get', 'ghg_quantity_metric_tons_co2e']], 400],
+                ['to-number', ['coalesce', ['get', 'ghg_quantity_metric_tons_co2e'], 400]],
                 400, 3,
                 4500000, 11,
             ],
