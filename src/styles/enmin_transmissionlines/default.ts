@@ -8,6 +8,9 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "energy_minerals_transmission_lines_style",
+    legend: [
+        { label: 'Transmission Lines', color: '#ffdd00', stroke: '#000000' },
+    ],
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.

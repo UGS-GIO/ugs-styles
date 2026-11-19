@@ -160,13 +160,16 @@ function stroke(layer: GLLayer, props: Props, geometry: Geometry, zoom: number):
     return { color, json: { type: 'CIMSolidStroke', enable: true, capStyle: cap, joinStyle: join, miterLimit: 10, width, color, effects } };
 }
 
-function fillLayers(layer: GLLayer, props: Props, zoom: number): { json: Json[]; color: Rgba | null } {
+function fillLayers(layer: GLLayer, props: Props, zoom: number, icon?: IconLookup): { json: Json[]; color: Rgba | null } {
     const p = (k: string) => evaluate(layer, k, props, 'polygon', zoom);
     const json: Json[] = [];
     const opacity = num(p('fill-opacity'), 1);
     const outline = layer.paint?.['fill-outline-color'] == null ? null : rgba(p('fill-outline-color'), opacity);
     if (outline) json.push({ type: 'CIMSolidStroke', enable: true, capStyle: 'Round', joinStyle: 'Round', miterLimit: 10, width: PT, color: outline });
-    const color = rgba(p('fill-color'), opacity);
+    const rawPat = layer.paint?.['fill-pattern'] == null ? null : p('fill-pattern');
+    const patName = field(rawPat, 'name') ?? rawPat;
+    const patternHit = typeof patName === 'string' ? icon?.(patName) : null;
+    const color = patternHit?.color ? rgba(patternHit.color, opacity) : rgba(p('fill-color'), opacity);
     if (color && color[3] > 0) json.push({ type: 'CIMSolidFill', enable: true, color });
     return { json, color: color && color[3] > 0 ? color : null };
 }
@@ -216,7 +219,7 @@ export function symbolFor(
             const s = stroke(l, props, geometry, zoom);
             if (s) { symbolLayers.push(s.json); line ??= s.color; }
         } else if (l.type === 'fill' && geometry === 'polygon') {
-            const f = fillLayers(l, props, zoom);
+            const f = fillLayers(l, props, zoom, icon);
             symbolLayers.push(...f.json);
             fill ??= f.color;
         }

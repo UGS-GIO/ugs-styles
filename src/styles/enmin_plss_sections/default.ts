@@ -36,14 +36,16 @@ const layers: StyleLayer[] = [
         "type": "symbol",
         "paint": {
             "text-opacity": 1,
-            "text-color": "#000000"
+            "text-color": "#000000",
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.2
         },
         "layout": {
             "text-field": "{frstdivlab}",
             "text-font": [
                 "Noto Sans Regular"
             ],
-            "text-size": 8,
+            "text-size": 11,
             "symbol-placement": "point"
         }
     }

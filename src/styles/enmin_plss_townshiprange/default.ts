@@ -8,6 +8,9 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "energy_minerals_plss_townshiprange_style",
+    legend: [
+        { label: 'Township & Range', color: '#FF0000' },
+    ],
 } satisfies Binding & { render: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
@@ -33,14 +36,16 @@ const layers: StyleLayer[] = [
         "type": "symbol",
         "paint": {
             "text-opacity": 1,
-            "text-color": "#E60000"
+            "text-color": "#E60000",
+            "text-halo-color": "#ffffff",
+            "text-halo-width": 1.2
         },
         "layout": {
             "text-field": "{twnshplab}",
             "text-font": [
                 "Noto Sans Regular"
             ],
-            "text-size": 8,
+            "text-size": 11,
             "symbol-placement": "point"
         }
     }

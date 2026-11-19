@@ -8,7 +8,14 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: "energy_minerals_oilgasfields_ogm_current",
-} satisfies Binding & { render: string };
+    field: 'type',
+    legend: [
+        { label: 'Gas Field', value: 'Gas', color: '#e31a1c', stroke: '#232323' },
+        { label: 'Oil Field', value: 'Oil', color: '#33a02c', stroke: '#232323' },
+        { label: 'Coalbed Methane Field', value: 'Coalbed Methane', color: '#ad42f5', stroke: '#232323' },
+        { label: 'CO2 Field', value: 'CO2', color: '#fdbf6f', stroke: '#232323' },
+    ],
+} satisfies Binding & { render: string; field: string };
 
 // Faithful translation of the SLD rules (filters + paint preserved). Tune as needed.
 const layers: StyleLayer[] = [

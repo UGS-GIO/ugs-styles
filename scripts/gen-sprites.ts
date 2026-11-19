@@ -106,10 +106,31 @@ function drawAsterisk(ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCe
     }
 }
 
+// Seamless 45-degree diagonal hatch tile for MapLibre `fill-pattern`, clipped to the cell.
+function drawSlash(ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCell, scale: number): void {
+    const size = SIZE * scale;
+    const step = size / 4;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(ox, oy, size, size);
+    ctx.clip();
+    ctx.strokeStyle = cell.stroke ?? cell.fill ?? '#000000';
+    ctx.lineWidth = 2 * scale;
+    ctx.lineCap = 'square';
+    for (let d = -size; d <= size * 2; d += step) {
+        ctx.beginPath();
+        ctx.moveTo(ox + d, oy + size);
+        ctx.lineTo(ox + d + size, oy);
+        ctx.stroke();
+    }
+    ctx.restore();
+}
+
 const SHAPES: Record<SpriteRecipe['shape'], (ctx: SKRSContext2D, ox: number, oy: number, cell: SpriteCell, scale: number) => void> = {
     triangle: drawTriangle,
     pie: drawPie,
     asterisk: drawAsterisk,
+    slash: drawSlash,
 };
 
 // --- packing (shared) ---------------------------------------------------------------------------
