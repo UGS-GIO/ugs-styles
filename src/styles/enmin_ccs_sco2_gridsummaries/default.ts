@@ -40,6 +40,25 @@ const layers: StyleLayer[] = [
             'line-width': 0.8,
         },
     },
+    {
+        id: 'enmin_ccs_sco2_gridsummaries-label',
+        type: 'symbol',
+        layout: {
+            'text-field': [
+                'case',
+                ['<=', ['coalesce', ['to-number', ['get', 'formation_count']], 0], 0],
+                '',
+                ['concat', ['to-string', ['get', 'formation_count']], ' Fms']
+            ],
+            'text-font': ['Noto Sans Bold'],
+            'text-size': 11,
+        },
+        paint: {
+            'text-color': '#2c3e50',
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1.5,
+        },
+    },
 ];
 
 export default layers;
