@@ -17,7 +17,7 @@ const layers: StyleLayer[] = [
         type: 'fill',
         paint: {
             'fill-color': '#d2b48c',
-            'fill-opacity': 0.3,
+            'fill-opacity': 1,
         },
     },
     {

@@ -33,7 +33,7 @@ export const spec = {
 const fill = (value: string, color: string): StyleLayer => ({
     id: `enmin_ccs_georegions-${value}`,
     type: 'fill',
-    paint: { 'fill-color': color, 'fill-opacity': 0.6, 'fill-outline-color': '#555555' },
+    paint: { 'fill-color': color, 'fill-opacity': 1, 'fill-outline-color': '#555555' },
     filter: ['==', ['downcase', ['to-string', ['get', 'ranking']]], value],
 });
 

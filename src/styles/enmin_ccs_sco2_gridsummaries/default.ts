@@ -64,7 +64,7 @@ const layers: StyleLayer[] = [
                 ['>=', cost(), 0.33], '#e4acac',
                 '#c85a5a',
             ],
-            'fill-opacity': 0.8,
+            'fill-opacity': 1,
         },
     },
     {

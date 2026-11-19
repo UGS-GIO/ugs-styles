@@ -29,7 +29,7 @@ const layers: StyleLayer[] = [
                 ['in', 'Limited', ['to-string', ['get', 'ranking']]], '#ff7e00',
                 '#cdcdcd',
             ],
-            'fill-opacity': 0.7,
+            'fill-opacity': 1,
         },
     },
     {
