@@ -8,8 +8,9 @@ export const spec = {
     title: 'Geothermal Wells & Springs',
     field: 'type',
     legend: [
-        { label: 'Well', value: 'Well', color: '#e67e22' },
-        { label: 'Spring', value: 'Spring', color: '#2980b9' },
+        { label: 'Mine', value: 'M', color: '#989898', stroke: '#232323' },
+        { label: 'Spring', value: 'S', color: '#32df36', stroke: '#232323' },
+        { label: 'Well', value: 'W', color: '#1f78b4', stroke: '#232323' },
     ],
 } satisfies Binding & { render: string; field: string };
 
@@ -21,13 +22,14 @@ const layers: StyleLayer[] = [
             'circle-color': [
                 'match',
                 ['downcase', ['to-string', ['get', 'type']]],
-                'well', '#e67e22',
-                'spring', '#2980b9',
+                'm', '#989898',
+                ['s', 's?'], '#32df36',
+                ['w', 'w?'], '#1f78b4',
                 '#95a5a6',
             ],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 4.5, 14, 7],
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 1,
+            'circle-radius': 3.5,
+            'circle-stroke-color': '#232323',
+            'circle-stroke-width': 0.5,
         },
     },
 ];

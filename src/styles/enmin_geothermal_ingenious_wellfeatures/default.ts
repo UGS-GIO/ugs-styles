@@ -6,27 +6,20 @@ export const spec = {
     kind: 'vector',
     assets: ['pmtiles'],
     title: 'Groundwater Wells',
-    field: 'thermalclass',
     legend: [
-        { label: 'Thermal Well', value: 'Thermal', color: '#e67e22' },
-        { label: 'Non-Thermal Well', value: 'Non-Thermal', color: '#3498db' },
+        { label: 'Ingenious Well', color: '#7ab8d9', stroke: '#232323' },
     ],
-} satisfies Binding & { render: string; field: string };
+} satisfies Binding & { render: string };
 
 const layers: StyleLayer[] = [
     {
         id: 'enmin_geothermal_ingenious_wellfeatures-circle',
         type: 'circle',
         paint: {
-            'circle-color': [
-                'match',
-                ['downcase', ['to-string', ['get', 'thermalclass']]],
-                'thermal', '#e67e22',
-                '#3498db',
-            ],
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 4.5, 14, 7],
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 1,
+            'circle-color': '#7ab8d9',
+            'circle-radius': 3.5,
+            'circle-stroke-color': '#232323',
+            'circle-stroke-width': 0.5,
         },
     },
 ];

@@ -7,19 +7,25 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'NATCARB Atlas (2015)',
     legend: [
-        { label: 'NATCARB Location', color: '#8e44ad' },
+        { label: 'NATCARB Grid Cell', color: '#d2b48c', stroke: '#8b6d47' },
     ],
 } satisfies Binding & { render: string };
 
 const layers: StyleLayer[] = [
     {
-        id: 'enmin_ccs_natcarb_location-circle',
-        type: 'circle',
+        id: 'enmin_ccs_natcarb_location-fill',
+        type: 'fill',
         paint: {
-            'circle-color': '#8e44ad',
-            'circle-radius': ['interpolate', ['linear'], ['zoom'], 6, 3, 10, 4.5, 14, 7],
-            'circle-stroke-color': '#ffffff',
-            'circle-stroke-width': 1,
+            'fill-color': '#d2b48c',
+            'fill-opacity': 0.3,
+        },
+    },
+    {
+        id: 'enmin_ccs_natcarb_location-line',
+        type: 'line',
+        paint: {
+            'line-color': '#8b6d47',
+            'line-width': 1.5,
         },
     },
 ];
