@@ -293,6 +293,7 @@ function esriDraw(sym: unknown, iconNames: Map<string, string>): Draw[] {
     if (get(sym, 'type') !== 'CIMSymbolReference') return [];
     return objs(get(get(sym, 'symbol'), 'symbolLayers')).map((L): Draw => {
         if (L.type === 'CIMSolidFill') return { kind: 'fill', color: nums(L.color) ?? [] };
+        if (L.type === 'CIMPictureFill') return { kind: 'fill', icon: 'pattern' };
         const fx = objs(L.effects);
         const dash = nums(fx.find((e) => e.type === 'CIMGeometricEffectDashes')?.dashTemplate);
         const off = numOr(fx.find((e) => e.type === 'CIMGeometricEffectOffset')?.offset, 0);

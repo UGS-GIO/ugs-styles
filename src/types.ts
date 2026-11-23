@@ -10,6 +10,20 @@ export type StyleLayer = DistributiveOmit<LayerSpecification, 'source'>;
 // consumer reads `kind` to pick the render shape and attaches the style only where one of `assets`
 // is. build-json.ts emits this into dist-json/index.json for STAC autodiscovery (warehouse
 // docs/STYLING.md). Declare it next to each render: `export const binding = {...} satisfies Binding`.
+export type LegendShape = 'fill' | 'hatch' | 'line' | 'circle' | 'triangle';
+
+export type LegendEntry = {
+    label: string;
+    color: string;
+    stroke?: string;
+    value?: string;
+    values?: readonly { value: string; color: string }[];
+    shape?: LegendShape;
+    row?: number;
+    col?: number;
+    noData?: boolean;
+};
+
 export type Binding = (
     | { itemId: string; collectionId?: never }        // == STAC item id (e.g. 'enmin_ucrc_wells', 'GQ-1560')
     | { collectionId: string; itemId?: never }        // == STAC collection id
@@ -17,7 +31,7 @@ export type Binding = (
     kind: 'vector' | 'raster';
     assets: string[];                // STAC asset keys this render targets: ['pmtiles'] | ['cog']
     title?: string;                  // human label for the render
-    legend?: { label: string; color: string; stroke?: string; value?: string }[];  // legend swatches: fill color + optional stroke/value, per label
+    legend?: readonly LegendEntry[];
     // raster-only render params (passed through to the STAC render extension):
     colormap_name?: string;
     rescale?: [number, number];

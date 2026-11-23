@@ -24,7 +24,7 @@ export type SpriteCell = {
 };
 
 export type SpriteRecipe = {
-    shape: 'triangle' | 'pie' | 'asterisk';
+    shape: 'triangle' | 'pie' | 'asterisk' | 'slash';
     // Where the frame values come from: a fixed list (output is a function of the commit —
     // reproducible, no build-time network) or the distinct values of a field read from the item's
     // live GeoParquet (for genuinely open domains, e.g. the pie's box-type combos).

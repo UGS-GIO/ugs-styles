@@ -22,7 +22,7 @@ import type { GLLayer } from './layers';
 export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 type Props = Record<string, string | number | boolean | null>;
 type Rgba = [number, number, number, number];
-export type Legend = readonly { label: string; color: string; values?: readonly { value: string }[] }[];
+export type Legend = readonly { label: string; color: string; value?: string; values?: readonly { value: string }[] }[];
 
 const PT = 0.75;
 const SIZE_ZOOM = 10;          // zoom at which zoom-driven paint is read when no scale ramp fits
@@ -131,6 +131,12 @@ const rgba = (c: unknown, opacity = 1): Rgba | null => {
 };
 const num = (v: unknown, d: number): number => (isNum(v) ? v : d);
 const hex = (c: Rgba): string => `#${c.slice(0, 3).map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+const hexRgba = (s: string | null | undefined, opacity = 1): Rgba | null => {
+    const m = s?.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    const [, r, g, b] = m ?? [];
+    if (!r || !g || !b) return null;
+    return [parseInt(r, 16), parseInt(g, 16), parseInt(b, 16), Math.round(opacity * 255)];
+};
 
 // ── symbols (CIM: exact dashes, casings, offsets; Map Viewer renders it) ─────
 
@@ -160,12 +166,29 @@ function stroke(layer: GLLayer, props: Props, geometry: Geometry, zoom: number):
     return { color, json: { type: 'CIMSolidStroke', enable: true, capStyle: cap, joinStyle: join, miterLimit: 10, width, color, effects } };
 }
 
-function fillLayers(layer: GLLayer, props: Props, zoom: number): { json: Json[]; color: Rgba | null } {
+function fillLayers(layer: GLLayer, props: Props, zoom: number, icon?: IconLookup): { json: Json[]; color: Rgba | null } {
     const p = (k: string) => evaluate(layer, k, props, 'polygon', zoom);
     const json: Json[] = [];
     const opacity = num(p('fill-opacity'), 1);
     const outline = layer.paint?.['fill-outline-color'] == null ? null : rgba(p('fill-outline-color'), opacity);
     if (outline) json.push({ type: 'CIMSolidStroke', enable: true, capStyle: 'Round', joinStyle: 'Round', miterLimit: 10, width: PT, color: outline });
+    if (layer.paint?.['fill-pattern'] != null) {
+        const rawPat = p('fill-pattern');
+        const patName = field(rawPat, 'name') ?? rawPat;
+        const patternHit = typeof patName === 'string' ? icon?.(patName) : null;
+        if (patternHit && opacity > 0) {
+            json.push({
+                type: 'CIMPictureFill',
+                enable: true,
+                url: `data:image/png;base64,${patternHit.imageData}`,
+                height: patternHit.height * PT,
+                scaleX: patternHit.height > 0 ? patternHit.width / patternHit.height : 1,
+                tintColor: [255, 255, 255, Math.round(opacity * 255)],
+            });
+            return { json, color: hexRgba(patternHit.color, opacity) };
+        }
+        return { json, color: null };
+    }
     const color = rgba(p('fill-color'), opacity);
     if (color && color[3] > 0) json.push({ type: 'CIMSolidFill', enable: true, color });
     return { json, color: color && color[3] > 0 ? color : null };
@@ -216,7 +239,7 @@ export function symbolFor(
             const s = stroke(l, props, geometry, zoom);
             if (s) { symbolLayers.push(s.json); line ??= s.color; }
         } else if (l.type === 'fill' && geometry === 'polygon') {
-            const f = fillLayers(l, props, zoom);
+            const f = fillLayers(l, props, zoom, icon);
             symbolLayers.push(...f.json);
             fill ??= f.color;
         }
@@ -682,7 +705,7 @@ export function toRenderer(
 
     // Group tuples by the symbol they evaluate to: one legend class per distinct symbol.
     // Legends written one entry per filtered layer (qfaults: color and dash per class) align by index.
-    const filtered = layers.filter((l) => l.filter != null);
+    const filtered = layers.filter((l) => l.filter != null && (l.type !== 'symbol' || geometry === 'point'));
     const aligned = (t: Props, z: number): number | undefined => {
         if (legend?.length !== filtered.length) return undefined;
         const i = filtered.findIndex((l) => passes(l, t, geometry, z));
@@ -691,7 +714,7 @@ export function toRenderer(
     type Group = { symbol: Symbol | null; keys: Set<string>; raw: string[][]; idx: number; at?: number };
     const groups = new Map<string, Group>();
     const owner = new Map<string, string>();
-    const all = [...data, ...extra];
+    const all = fields.length ? [...data, ...extra] : [{}];
     for (const [b, { z }] of (scaled ? buckets : [{ z: zoom }]).entries()) {
         for (const [i, t] of all.entries()) {
             const key = keyOf(t, b);
@@ -719,6 +742,7 @@ export function toRenderer(
         return [{
             label: (g.at === undefined ? undefined : legend?.[g.at]?.label)
                 ?? legendLabel(legend, g.symbol, firsts)
+                ?? (fields.length === 0 ? legend?.[0]?.label : undefined)
                 ?? listed.slice(0, 4).join('; ') + (listed.length > 4 ? '…' : ''),
             symbol: g.symbol.json,
             keys: g.keys,
@@ -748,6 +772,7 @@ function legendIndex(legend: Legend | undefined, symbol: Symbol, values: string[
     if (!legend?.length) return undefined;
     const lower = new Set(values.map((v) => v.toLowerCase()));
     const byValue = legend.findIndex((e) => e.values?.some((v) => lower.has(v.value.toLowerCase()))
+        || (e.value !== undefined && lower.has(e.value.toLowerCase()))
         || lower.has(e.label.toLowerCase()));
     if (byValue >= 0) return byValue;
     const color = symbol.color?.toLowerCase();
