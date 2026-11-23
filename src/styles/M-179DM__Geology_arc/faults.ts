@@ -1,6 +1,15 @@
 import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
-import type { Binding, StyleLayer } from '../../types';
+import type { Binding, LegendEntry, StyleLayer } from '../../types';
 import type { SpriteRecipe } from '../../sprites';
+
+export const FAULT_LEGEND: readonly LegendEntry[] = [
+    { label: 'Fault, Normal, Well Located', color: '#000000', shape: 'line' },
+    { label: 'Fault, Normal, Approximately Located', color: '#000000', shape: 'line' },
+    { label: 'Fault, Normal, Concealed', color: '#000000', shape: 'line' },
+    { label: 'Fault, Thrust, Well Located', color: '#000000', shape: 'line' },
+    { label: 'Fault, Thrust, Approximately Located', color: '#000000', shape: 'line' },
+    { label: 'Fault, Thrust, Concealed', color: '#000000', shape: 'line' },
+];
 
 export const spec = {
     itemId: 'M-179DM__Geology_arc',
@@ -9,14 +18,7 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Utah Faults (1:500,000)',
     sprite: 'styles/M-179DM__Geology_arc/sprite',
-    legend: [
-        { label: 'Fault, Normal, Well Located', color: '#000000', shape: 'line' as const },
-        { label: 'Fault, Normal, Approximately Located', color: '#000000', shape: 'line' as const },
-        { label: 'Fault, Normal, Concealed', color: '#000000', shape: 'line' as const },
-        { label: 'Fault, Thrust, Well Located', color: '#000000', shape: 'line' as const },
-        { label: 'Fault, Thrust, Approximately Located', color: '#000000', shape: 'line' as const },
-        { label: 'Fault, Thrust, Concealed', color: '#000000', shape: 'line' as const },
-    ],
+    legend: FAULT_LEGEND,
 } satisfies Binding & { render: string; sprite: string };
 
 export const sprite: SpriteRecipe = {
@@ -29,7 +31,7 @@ export const sprite: SpriteRecipe = {
     }],
 };
 
-const eq = (field: string, value: string): ExpressionSpecification => [
+export const eq = (field: string, value: string): ExpressionSpecification => [
     '==',
     ['downcase', ['to-string', ['get', field]]],
     value,
@@ -43,7 +45,7 @@ const faultRule = (subtype: string, modifier: string): FilterSpecification => [
 
 // Handwritten layers to filter TYPE='fault' from M-179DM__Geology_arc and draw dashed/dotted fault
 // classes plus line-placed thrust teeth from the baked triangle sprite.
-const layers: StyleLayer[] = [
+export const FAULT_LAYERS: StyleLayer[] = [
     {
         id: 'M-179DM__Geology_arc-normal-well',
         type: 'line',
@@ -118,4 +120,4 @@ const layers: StyleLayer[] = [
     },
 ];
 
-export default layers;
+export default FAULT_LAYERS;
