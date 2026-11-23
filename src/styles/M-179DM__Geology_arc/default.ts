@@ -12,7 +12,7 @@ export const spec = {
         ...FAULT_LEGEND,
         { label: 'Contact', value: 'contact', color: '#444444', shape: 'line' as const },
         { label: 'Water Boundary', value: 'water boundary', color: '#4a90d9', shape: 'line' as const },
-        { label: 'Shoreline', value: 'shoreline', color: '#1f78b4', shape: 'line' as const },
+        { label: 'Shoreline', value: 'shoreline', color: '#1f78b4', shape: 'line' as const, lineStyle: 'dashed' as const },
         { label: 'Gilsonite Vein', value: 'vein', color: '#7b2cbf', shape: 'line' as const },
         { label: 'Marker Bed', value: 'marker bed', color: '#8c510a', shape: 'line' as const },
         { label: 'Map Boundary', value: 'map boundary', color: '#666666', shape: 'line' as const },

@@ -11,6 +11,7 @@ export type StyleLayer = DistributiveOmit<LayerSpecification, 'source'>;
 // is. build-json.ts emits this into dist-json/index.json for STAC autodiscovery (warehouse
 // docs/STYLING.md). Declare it next to each render: `export const binding = {...} satisfies Binding`.
 export type LegendShape = 'fill' | 'hatch' | 'line' | 'circle' | 'triangle';
+export type LegendLineStyle = 'solid' | 'dashed' | 'dotted';
 
 export type LegendEntry = {
     label: string;
@@ -19,6 +20,8 @@ export type LegendEntry = {
     value?: string;
     values?: readonly { value: string; color: string }[];
     shape?: LegendShape;
+    lineStyle?: LegendLineStyle;
+    teeth?: boolean;
     row?: number;
     col?: number;
     noData?: boolean;

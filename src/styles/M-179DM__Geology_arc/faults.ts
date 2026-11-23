@@ -4,11 +4,11 @@ import type { SpriteRecipe } from '../../sprites';
 
 export const FAULT_LEGEND: readonly LegendEntry[] = [
     { label: 'Fault, Normal, Well Located', color: '#000000', shape: 'line' },
-    { label: 'Fault, Normal, Approximately Located', color: '#000000', shape: 'line' },
-    { label: 'Fault, Normal, Concealed', color: '#000000', shape: 'line' },
-    { label: 'Fault, Thrust, Well Located', color: '#000000', shape: 'line' },
-    { label: 'Fault, Thrust, Approximately Located', color: '#000000', shape: 'line' },
-    { label: 'Fault, Thrust, Concealed', color: '#000000', shape: 'line' },
+    { label: 'Fault, Normal, Approximately Located', color: '#000000', shape: 'line', lineStyle: 'dashed' },
+    { label: 'Fault, Normal, Concealed', color: '#000000', shape: 'line', lineStyle: 'dotted' },
+    { label: 'Fault, Thrust, Well Located', color: '#000000', shape: 'line', teeth: true },
+    { label: 'Fault, Thrust, Approximately Located', color: '#000000', shape: 'line', lineStyle: 'dashed', teeth: true },
+    { label: 'Fault, Thrust, Concealed', color: '#000000', shape: 'line', lineStyle: 'dotted', teeth: true },
 ];
 
 export const spec = {
