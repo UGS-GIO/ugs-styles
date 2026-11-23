@@ -14,6 +14,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string; field: string };
 
+// Handwritten layer to group uncertain codes (`S?`, `W?`) with their base Spring/Well classes.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_geothermal_wellsandsprings-circle',

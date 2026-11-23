@@ -16,6 +16,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string; field: string };
 
+// Handwritten circle layer: pairs stepped storage-cost color with continuous capacity-scaled radius.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_sco2_points-circle',
@@ -23,7 +24,7 @@ const layers: StyleLayer[] = [
         paint: {
             'circle-color': [
                 'step',
-                ['to-number', ['coalesce', ['get', 'storage_cost_doll_per_tco2'], 0]],
+                ['to-number', ['get', 'storage_cost_doll_per_tco2'], 0],
                 '#00FF00',
                 11.795, '#FFFF00',
                 21.64, '#FFA500',
@@ -33,7 +34,7 @@ const layers: StyleLayer[] = [
             'circle-radius': [
                 'interpolate',
                 ['linear'],
-                ['to-number', ['coalesce', ['get', 'capacity_mtco2'], 4.72]],
+                ['to-number', ['get', 'capacity_mtco2'], 4.72],
                 4.72, 5,
                 5764.04, 30,
             ],

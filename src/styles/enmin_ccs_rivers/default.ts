@@ -12,6 +12,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
+// Handwritten layers for dark river casing + zoom-scaled blue center line.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_rivers-casing',

@@ -65,7 +65,7 @@ function refsFromFilter(f: Json, out: Ref[]): void {
 function getField(node: Json | undefined): { field: string; ci: boolean } | null {
   if (node == null || !isArray(node)) return null;
   if (node[0] === 'get' && typeof node[1] === 'string') return { field: node[1], ci: false };
-  if (node[0] === 'downcase' || node[0] === 'to-string' || node[0] === 'to-number' || node[0] === 'coalesce') {
+  if (node[0] === 'downcase' || node[0] === 'to-string' || node[0] === 'to-number' || node[0] === 'number' || node[0] === 'coalesce') {
     const inner = getField(node[1]);
     return inner ? { field: inner.field, ci: node[0] === 'downcase' || inner.ci } : null;
   }

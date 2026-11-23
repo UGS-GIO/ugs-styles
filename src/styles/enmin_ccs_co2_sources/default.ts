@@ -23,6 +23,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string; field: string };
 
+// Handwritten circle layer: combines categorical description colors with continuous emissions-scaled radius.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_co2_sources-circle',
@@ -48,7 +49,7 @@ const layers: StyleLayer[] = [
             'circle-radius': [
                 'interpolate',
                 ['linear'],
-                ['to-number', ['coalesce', ['get', 'ghg_quantity_metric_tons_co2e'], 400]],
+                ['to-number', ['get', 'ghg_quantity_metric_tons_co2e'], 400],
                 400, 3,
                 4500000, 11,
             ],

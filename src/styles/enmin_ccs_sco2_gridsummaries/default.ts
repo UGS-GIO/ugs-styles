@@ -1,3 +1,4 @@
+import type { ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import type { Binding, StyleLayer } from '../../types';
 
 export const spec = {
@@ -7,26 +8,25 @@ export const spec = {
     assets: ['pmtiles'],
     title: 'Statewide Storage Resource Estimates',
     legend: [
-        { label: 'High Cap / Low Cost', value: 'bivariate_0_0', color: '#64acbe' },
-        { label: 'High Cap / Mid Cost', value: 'bivariate_0_1', color: '#627f8c' },
-        { label: 'High Cap / High Cost', value: 'bivariate_0_2', color: '#574249' },
-        { label: 'Mid Cap / Low Cost', value: 'bivariate_1_0', color: '#b0d5df' },
-        { label: 'Mid Cap / Mid Cost', value: 'bivariate_1_1', color: '#ad9ea5' },
-        { label: 'Mid Cap / High Cost', value: 'bivariate_1_2', color: '#985356' },
-        { label: 'Low Cap / Low Cost', value: 'bivariate_2_0', color: '#e8e8e8' },
-        { label: 'Low Cap / Mid Cost', value: 'bivariate_2_1', color: '#e4acac' },
-        { label: 'Low Cap / High Cost', value: 'bivariate_2_2', color: '#c85a5a' },
-        { label: 'Not Evaluated', value: 'bivariate_nodata', color: '#ffffff', stroke: '#999999' },
+        { label: 'High Cap / Low Cost', row: 0, col: 0, color: '#64acbe' },
+        { label: 'High Cap / Mid Cost', row: 0, col: 1, color: '#627f8c' },
+        { label: 'High Cap / High Cost', row: 0, col: 2, color: '#574249' },
+        { label: 'Mid Cap / Low Cost', row: 1, col: 0, color: '#b0d5df' },
+        { label: 'Mid Cap / Mid Cost', row: 1, col: 1, color: '#ad9ea5' },
+        { label: 'Mid Cap / High Cost', row: 1, col: 2, color: '#985356' },
+        { label: 'Low Cap / Low Cost', row: 2, col: 0, color: '#e8e8e8' },
+        { label: 'Low Cap / Mid Cost', row: 2, col: 1, color: '#e4acac' },
+        { label: 'Low Cap / High Cost', row: 2, col: 2, color: '#c85a5a' },
+        { label: 'Not Evaluated', noData: true, color: '#ffffff', stroke: '#999999' },
     ],
 } satisfies Binding & { render: string };
 
-const hasPercentiles = (): ['all', ['has', string], ['has', string], ['!=', ['get', string], null], ['!=', ['get', string], null]] =>
-    ['all', ['has', 'capacity_percentile'], ['has', 'cost_percentile'], ['!=', ['get', 'capacity_percentile'], null], ['!=', ['get', 'cost_percentile'], null]];
-const missingPercentiles = (): ['any', ['!', ['has', string]], ['!', ['has', string]], ['==', ['get', string], null], ['==', ['get', string], null]] =>
-    ['any', ['!', ['has', 'capacity_percentile']], ['!', ['has', 'cost_percentile']], ['==', ['get', 'capacity_percentile'], null], ['==', ['get', 'cost_percentile'], null]];
-const cap = (): ['to-number', ['get', string]] => ['to-number', ['get', 'capacity_percentile']];
-const cost = (): ['to-number', ['get', string]] => ['to-number', ['get', 'cost_percentile']];
+const cap = (): ExpressionSpecification => ['number', ['get', 'capacity_percentile'], -1];
+const cost = (): ExpressionSpecification => ['number', ['get', 'cost_percentile'], -1];
+const hasPercentiles = (): FilterSpecification => ['all', ['>=', cap(), 0], ['>=', cost(), 0]];
+const missingPercentiles = (): FilterSpecification => ['any', ['<', cap(), 0], ['<', cost(), 0]];
 
+// Handwritten layers for the 3x3 bivariate percentile matrix, dashed NoData cells, and formation-count labels.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_sco2_gridsummaries-nodata-fill',
@@ -79,9 +79,13 @@ const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_sco2_gridsummaries-label',
         type: 'symbol',
-        filter: ['>', ['coalesce', ['to-number', ['get', 'formation_count']], 0], 0],
         layout: {
-            'text-field': ['concat', ['to-string', ['get', 'formation_count']], ' Fms'],
+            'text-field': [
+                'case',
+                ['>', ['coalesce', ['get', 'formation_count'], 0], 0],
+                ['concat', ['to-string', ['get', 'formation_count']], ' Fms'],
+                '',
+            ],
             'text-font': ['Noto Sans Bold'],
             'text-size': 13,
         },

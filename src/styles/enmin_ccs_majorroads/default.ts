@@ -12,6 +12,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
+// Handwritten layer for zoom-interpolated road stroke widths.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_majorroads-line',

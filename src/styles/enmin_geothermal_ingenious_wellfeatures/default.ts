@@ -1,27 +1,14 @@
-import type { Binding, StyleLayer } from '../../types';
+import type { StyleSpec } from '../../types';
 
-export const spec = {
+export const spec: StyleSpec = {
     itemId: 'enmin_geothermal_ingenious_wellfeatures',
     render: 'default',
     kind: 'vector',
     assets: ['pmtiles'],
+    archetype: 'point',
+    color: '#7ab8d9',
     title: 'Groundwater Wells',
     legend: [
-        { label: 'Ingenious Well', color: '#7ab8d9', stroke: '#232323' },
+        { label: 'Ingenious Well', color: '#7ab8d9', stroke: '#444444' },
     ],
-} satisfies Binding & { render: string };
-
-const layers: StyleLayer[] = [
-    {
-        id: 'enmin_geothermal_ingenious_wellfeatures-circle',
-        type: 'circle',
-        paint: {
-            'circle-color': '#7ab8d9',
-            'circle-radius': 3.5,
-            'circle-stroke-color': '#232323',
-            'circle-stroke-width': 0.5,
-        },
-    },
-];
-
-export default layers;
+};

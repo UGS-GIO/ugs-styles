@@ -11,6 +11,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
+// Handwritten layers for full-opacity fill paired with a dedicated 1.2px dark outline.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_wsa-fill',

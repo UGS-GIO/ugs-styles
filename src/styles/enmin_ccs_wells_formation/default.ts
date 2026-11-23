@@ -23,6 +23,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string; field: string };
 
+// Handwritten layer for 12-class case-insensitive welltype colors with 3.5px radius and translucent stroke.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_wells_formation-circle',

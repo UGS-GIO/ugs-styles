@@ -16,6 +16,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string; field: string };
 
+// Handwritten layers for substring ranking classification (`in`) + bevelled dark polygon outline.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_sitlareports-fill',

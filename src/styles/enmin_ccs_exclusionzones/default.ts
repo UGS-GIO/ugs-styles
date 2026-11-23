@@ -17,8 +17,8 @@ export const spec = {
     field: 'grade',
     sprite: 'styles/enmin_ccs_exclusionzones/sprite',
     legend: [
-        { label: 'Exclusion Zones - Land Management', value: 'No-CCUS-Zone', color: '#ff0000', stroke: '#000000' },
-        { label: 'Exclusion Zones - Geology', value: 'No-CCUS-Zone-Geo', color: '#000000', stroke: '#000000' },
+        { label: 'Exclusion Zones - Land Management', value: 'No-CCUS-Zone', values: [{ value: 'No-CCUS-Zone', color: '#ff0000' }], color: '#ff0000', stroke: '#000000', shape: 'hatch' as const },
+        { label: 'Exclusion Zones - Geology', value: 'No-CCUS-Zone-Geo', values: [{ value: 'No-CCUS-Zone-Geo', color: '#000000' }], color: '#000000', stroke: '#000000', shape: 'hatch' as const },
     ],
 } satisfies Binding & { render: string; field: string; sprite: string };
 
@@ -34,6 +34,7 @@ export const sprite: SpriteRecipe = {
 const gradeFilter = (value: string): FilterSpecification => ['==', ['downcase', ['to-string', ['get', 'grade']]], value];
 const hatchOpacity = interpolateByZoom([[6, 0.55], [10, 0.85], [14, 1]]);
 
+// Handwritten layers for diagonal slash fill-pattern sprites + dark polygon outline.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_exclusionzones-land-fill',
@@ -58,7 +59,7 @@ const layers: StyleLayer[] = [
         type: 'line',
         paint: {
             'line-color': '#000000',
-            'line-width': interpolateByZoom([[6, 1], [10, 1.5], [14, 2.2]]),
+            'line-width': 1.2,
         },
         layout: {
             'line-cap': 'square',

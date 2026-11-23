@@ -38,13 +38,14 @@ export const spec = {
         label: NPWC_PURPOSE_DESC[code],
         color: npwcFill(code),
         stroke: npwcStroke(code),
+        shape: 'triangle' as const,
         values: [{ value: code, color: npwcFill(code) }],
     })),
 } satisfies Binding & {
     render: string;
     field: string;
     sprite: string;
-    legend: { label: string; color: string; stroke: string; values: { value: string; color: string }[] }[];
+    legend: { label: string; color: string; stroke: string; shape: 'triangle'; values: { value: string; color: string }[] }[];
 };
 
 // Sprite recipe — baked by scripts/gen-sprites.ts. One triangle frame per purpose code, from the

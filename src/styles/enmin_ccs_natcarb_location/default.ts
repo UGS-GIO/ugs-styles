@@ -11,6 +11,7 @@ export const spec = {
     ],
 } satisfies Binding & { render: string };
 
+// Handwritten layers for full-opacity fill paired with a 1.5px brown grid outline.
 const layers: StyleLayer[] = [
     {
         id: 'enmin_ccs_natcarb_location-fill',

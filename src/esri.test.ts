@@ -36,3 +36,24 @@ void test('a size by scale lists its stops in ascending scale', () => {
     assert.deepEqual(scales, [...scales].sort((a, b) => a - b));
     assert.ok(num(stops[0]?.size) > num(stops.at(-1)?.size), 'largest at the smallest scale');
 });
+
+void test('zoom-scaled lines with no attribute fields emit uniqueValue classes per zoom bucket', () => {
+    const line: GLLayer = { id: 'l', type: 'line',
+        paint: { 'line-color': '#000000', 'line-width': ['interpolate', ['linear'], ['zoom'], 6, 1.5, 14, 3] } };
+    const { renderer } = toRenderer([line], 'line', [], [{ label: 'Major Roads', color: '#000000' }]);
+    assert.equal(obj(renderer).type, 'uniqueValue');
+    assert.ok(arr(obj(renderer).uniqueValueInfos).length > 1, 'expected one class per zoom bucket');
+});
+
+void test('fill-pattern with a baked sprite emits a CIMPictureFill layer', () => {
+    const fill: GLLayer = { id: 'f', type: 'fill',
+        paint: { 'fill-pattern': 'slash-red', 'fill-opacity': 0.8 } };
+    const icon = (name: string) => name === 'slash-red'
+        ? { imageData: 'AAAA', width: 40, height: 40, color: '#ff0000' }
+        : null;
+    const { renderer } = toRenderer([fill], 'polygon', [{}], undefined, icon);
+    const sym = obj(obj(obj(renderer).symbol).symbol);
+    const layers = arr(sym.symbolLayers).map(obj);
+    assert.equal(layers.length, 1);
+    assert.equal(layers[0]?.type, 'CIMPictureFill');
+});
